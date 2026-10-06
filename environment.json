@@ -1,0 +1,9 @@
+{
+  "python": "3.13",
+  "java": "21",
+  "postgresql": "17",
+  "vscode_minimum": "1.95",
+  "git_minimum": "2.47",
+  "status": "selected_toolchain_for_research_stage",
+  "note": "Actual installation is recorded by tools/check_environment.py"
+}
