@@ -1,0 +1,512 @@
+<?xml version='1.0' encoding='utf-8'?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_KT2" targetNamespace="https://github.com/Ipopuk/mfo-research/kt2" exporter="mfo-research" exporterVersion="1.0">
+  <bpmn:collaboration id="Collaboration_KT2">
+    <bpmn:participant id="Participant_MKK" name="Микрокредитная компания" processRef="Process_MKK" />
+    <bpmn:participant id="Participant_Applicant" name="Заявитель" />
+    <bpmn:participant id="Participant_BKI" name="Бюро кредитных историй" />
+    <bpmn:participant id="Participant_Service" name="Сервис уведомлений" />
+    <bpmn:messageFlow id="MessageFlow_1" name="Обращение" sourceRef="Participant_Applicant" targetRef="Node_register" />
+    <bpmn:messageFlow id="MessageFlow_2" name="Запрос уточнения" sourceRef="Node_request_info" targetRef="Participant_Applicant" />
+    <bpmn:messageFlow id="MessageFlow_3" name="Дополнительные сведения" sourceRef="Participant_Applicant" targetRef="Node_check" />
+    <bpmn:messageFlow id="MessageFlow_4" name="Запрос" sourceRef="Node_bki" targetRef="Participant_BKI" />
+    <bpmn:messageFlow id="MessageFlow_5" name="Ответ" sourceRef="Participant_BKI" targetRef="Node_bki_answer" />
+    <bpmn:messageFlow id="MessageFlow_6" name="Сообщение" sourceRef="Node_notify" targetRef="Participant_Service" />
+    <bpmn:messageFlow id="MessageFlow_7" name="Статус доставки" sourceRef="Participant_Service" targetRef="Node_record_notice" />
+    <bpmn:messageFlow id="MessageFlow_8" name="Решение" sourceRef="Node_notify" targetRef="Participant_Applicant" />
+  </bpmn:collaboration>
+  <bpmn:process id="Process_MKK" isExecutable="false">
+    <bpmn:laneSet id="LaneSet_MKK">
+      <bpmn:lane id="Lane_specialist" name="Кредитный специалист">
+        <bpmn:flowNodeRef>Node_start</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Node_register</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Node_check</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Node_complete</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Node_request_info</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Node_withdrawn</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Node_close</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Node_end_withdrawn</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Node_identity</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Node_restrictions</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Node_restricted</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Node_refusal</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Node_consent</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Node_bki</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Node_bki_answer</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Node_wait_bki</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Node_payment</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Node_proposal</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Node_merge</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Node_notify</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Node_record_notice</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Node_delivered</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Node_end_notified</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_authorized" name="Уполномоченный сотрудник">
+        <bpmn:flowNodeRef>Node_decide</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Node_record</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+    <bpmn:startEvent id="Node_start" name="Поступило обращение">
+      <bpmn:outgoing>Flow_1</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:task id="Node_register" name="Зарегистрировать заявку">
+      <bpmn:incoming>Flow_1</bpmn:incoming>
+      <bpmn:outgoing>Flow_2</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Node_check" name="Проверить комплектность заявки">
+      <bpmn:incoming>Flow_2</bpmn:incoming>
+      <bpmn:incoming>Flow_8</bpmn:incoming>
+      <bpmn:outgoing>Flow_3</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:exclusiveGateway id="Node_complete" name="Данные полны?">
+      <bpmn:incoming>Flow_3</bpmn:incoming>
+      <bpmn:outgoing>Flow_4</bpmn:outgoing>
+      <bpmn:outgoing>Flow_5</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:task id="Node_request_info" name="Запросить недостающие сведения">
+      <bpmn:incoming>Flow_5</bpmn:incoming>
+      <bpmn:outgoing>Flow_6</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:exclusiveGateway id="Node_withdrawn" name="Заявка отозвана?">
+      <bpmn:incoming>Flow_6</bpmn:incoming>
+      <bpmn:outgoing>Flow_7</bpmn:outgoing>
+      <bpmn:outgoing>Flow_8</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:task id="Node_close" name="Закрыть отозванную заявку">
+      <bpmn:incoming>Flow_7</bpmn:incoming>
+      <bpmn:outgoing>Flow_9</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:endEvent id="Node_end_withdrawn" name="Заявка закрыта">
+      <bpmn:incoming>Flow_9</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:task id="Node_identity" name="Проверить личность и согласия">
+      <bpmn:incoming>Flow_4</bpmn:incoming>
+      <bpmn:outgoing>Flow_10</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Node_restrictions" name="Проверить ограничения">
+      <bpmn:incoming>Flow_10</bpmn:incoming>
+      <bpmn:outgoing>Flow_11</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:exclusiveGateway id="Node_restricted" name="Есть запрет?">
+      <bpmn:incoming>Flow_11</bpmn:incoming>
+      <bpmn:outgoing>Flow_12</bpmn:outgoing>
+      <bpmn:outgoing>Flow_13</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:task id="Node_refusal" name="Подготовить основание отказа">
+      <bpmn:incoming>Flow_12</bpmn:incoming>
+      <bpmn:outgoing>Flow_14</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:exclusiveGateway id="Node_consent" name="Есть основание для БКИ?">
+      <bpmn:incoming>Flow_13</bpmn:incoming>
+      <bpmn:outgoing>Flow_15</bpmn:outgoing>
+      <bpmn:outgoing>Flow_16</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:task id="Node_bki" name="Получить сведения БКИ">
+      <bpmn:incoming>Flow_15</bpmn:incoming>
+      <bpmn:incoming>Flow_20</bpmn:incoming>
+      <bpmn:outgoing>Flow_17</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:exclusiveGateway id="Node_bki_answer" name="Ответ получен?">
+      <bpmn:incoming>Flow_17</bpmn:incoming>
+      <bpmn:outgoing>Flow_18</bpmn:outgoing>
+      <bpmn:outgoing>Flow_19</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:task id="Node_wait_bki" name="Ожидать повторной проверки">
+      <bpmn:incoming>Flow_19</bpmn:incoming>
+      <bpmn:outgoing>Flow_20</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Node_payment" name="Рассчитать предварительную платёжную нагрузку">
+      <bpmn:incoming>Flow_16</bpmn:incoming>
+      <bpmn:incoming>Flow_18</bpmn:incoming>
+      <bpmn:outgoing>Flow_21</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Node_proposal" name="Подготовить предложение">
+      <bpmn:incoming>Flow_21</bpmn:incoming>
+      <bpmn:outgoing>Flow_22</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:exclusiveGateway id="Node_merge" name="Предложение готово">
+      <bpmn:incoming>Flow_14</bpmn:incoming>
+      <bpmn:incoming>Flow_22</bpmn:incoming>
+      <bpmn:outgoing>Flow_23</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:task id="Node_decide" name="Принять решение">
+      <bpmn:incoming>Flow_23</bpmn:incoming>
+      <bpmn:outgoing>Flow_24</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Node_record" name="Зафиксировать решение по заявке">
+      <bpmn:incoming>Flow_24</bpmn:incoming>
+      <bpmn:outgoing>Flow_25</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Node_notify" name="Направить уведомление">
+      <bpmn:incoming>Flow_25</bpmn:incoming>
+      <bpmn:incoming>Flow_29</bpmn:incoming>
+      <bpmn:outgoing>Flow_26</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Node_record_notice" name="Зафиксировать уведомление заявителя">
+      <bpmn:incoming>Flow_26</bpmn:incoming>
+      <bpmn:outgoing>Flow_27</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:exclusiveGateway id="Node_delivered" name="Уведомление доставлено?">
+      <bpmn:incoming>Flow_27</bpmn:incoming>
+      <bpmn:outgoing>Flow_28</bpmn:outgoing>
+      <bpmn:outgoing>Flow_29</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:endEvent id="Node_end_notified" name="Решение сообщено">
+      <bpmn:incoming>Flow_28</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_1" sourceRef="Node_start" targetRef="Node_register" />
+    <bpmn:sequenceFlow id="Flow_2" sourceRef="Node_register" targetRef="Node_check" />
+    <bpmn:sequenceFlow id="Flow_3" sourceRef="Node_check" targetRef="Node_complete" />
+    <bpmn:sequenceFlow id="Flow_4" sourceRef="Node_complete" targetRef="Node_identity" name="Да" />
+    <bpmn:sequenceFlow id="Flow_5" sourceRef="Node_complete" targetRef="Node_request_info" name="Нет" />
+    <bpmn:sequenceFlow id="Flow_6" sourceRef="Node_request_info" targetRef="Node_withdrawn" />
+    <bpmn:sequenceFlow id="Flow_7" sourceRef="Node_withdrawn" targetRef="Node_close" name="Да" />
+    <bpmn:sequenceFlow id="Flow_8" sourceRef="Node_withdrawn" targetRef="Node_check" name="Нет: сведения получены" />
+    <bpmn:sequenceFlow id="Flow_9" sourceRef="Node_close" targetRef="Node_end_withdrawn" />
+    <bpmn:sequenceFlow id="Flow_10" sourceRef="Node_identity" targetRef="Node_restrictions" />
+    <bpmn:sequenceFlow id="Flow_11" sourceRef="Node_restrictions" targetRef="Node_restricted" />
+    <bpmn:sequenceFlow id="Flow_12" sourceRef="Node_restricted" targetRef="Node_refusal" name="Да" />
+    <bpmn:sequenceFlow id="Flow_13" sourceRef="Node_restricted" targetRef="Node_consent" name="Нет" />
+    <bpmn:sequenceFlow id="Flow_14" sourceRef="Node_refusal" targetRef="Node_merge" />
+    <bpmn:sequenceFlow id="Flow_15" sourceRef="Node_consent" targetRef="Node_bki" name="Да" />
+    <bpmn:sequenceFlow id="Flow_16" sourceRef="Node_consent" targetRef="Node_payment" name="Нет" />
+    <bpmn:sequenceFlow id="Flow_17" sourceRef="Node_bki" targetRef="Node_bki_answer" />
+    <bpmn:sequenceFlow id="Flow_18" sourceRef="Node_bki_answer" targetRef="Node_payment" name="Да" />
+    <bpmn:sequenceFlow id="Flow_19" sourceRef="Node_bki_answer" targetRef="Node_wait_bki" name="Нет" />
+    <bpmn:sequenceFlow id="Flow_20" sourceRef="Node_wait_bki" targetRef="Node_bki" />
+    <bpmn:sequenceFlow id="Flow_21" sourceRef="Node_payment" targetRef="Node_proposal" />
+    <bpmn:sequenceFlow id="Flow_22" sourceRef="Node_proposal" targetRef="Node_merge" />
+    <bpmn:sequenceFlow id="Flow_23" sourceRef="Node_merge" targetRef="Node_decide" />
+    <bpmn:sequenceFlow id="Flow_24" sourceRef="Node_decide" targetRef="Node_record" />
+    <bpmn:sequenceFlow id="Flow_25" sourceRef="Node_record" targetRef="Node_notify" />
+    <bpmn:sequenceFlow id="Flow_26" sourceRef="Node_notify" targetRef="Node_record_notice" />
+    <bpmn:sequenceFlow id="Flow_27" sourceRef="Node_record_notice" targetRef="Node_delivered" />
+    <bpmn:sequenceFlow id="Flow_28" sourceRef="Node_delivered" targetRef="Node_end_notified" name="Да" />
+    <bpmn:sequenceFlow id="Flow_29" sourceRef="Node_delivered" targetRef="Node_notify" name="Нет" />
+    <bpmn:dataObject id="Data_form" />
+    <bpmn:dataObjectReference id="DataRef_form" dataObjectRef="Data_form" name="Анкета заявителя" />
+    <bpmn:association id="Association_form" sourceRef="DataRef_form" targetRef="Node_register" />
+    <bpmn:dataObject id="Data_application" />
+    <bpmn:dataObjectReference id="DataRef_application" dataObjectRef="Data_application" name="Заявка" />
+    <bpmn:association id="Association_application" sourceRef="DataRef_application" targetRef="Node_check" />
+    <bpmn:dataObject id="Data_document" />
+    <bpmn:dataObjectReference id="DataRef_document" dataObjectRef="Data_document" name="Документ" />
+    <bpmn:association id="Association_document" sourceRef="DataRef_document" targetRef="Node_check" />
+    <bpmn:dataObject id="Data_consent_data" />
+    <bpmn:dataObjectReference id="DataRef_consent_data" dataObjectRef="Data_consent_data" name="Согласие" />
+    <bpmn:association id="Association_consent_data" sourceRef="DataRef_consent_data" targetRef="Node_identity" />
+    <bpmn:dataObject id="Data_check_result" />
+    <bpmn:dataObjectReference id="DataRef_check_result" dataObjectRef="Data_check_result" name="Результат проверки" />
+    <bpmn:association id="Association_check_result" sourceRef="DataRef_check_result" targetRef="Node_restrictions" />
+    <bpmn:dataObject id="Data_proposal_data" />
+    <bpmn:dataObjectReference id="DataRef_proposal_data" dataObjectRef="Data_proposal_data" name="Предложение" />
+    <bpmn:association id="Association_proposal_data" sourceRef="DataRef_proposal_data" targetRef="Node_proposal" />
+    <bpmn:dataObject id="Data_decision_data" />
+    <bpmn:dataObjectReference id="DataRef_decision_data" dataObjectRef="Data_decision_data" name="Решение" />
+    <bpmn:association id="Association_decision_data" sourceRef="DataRef_decision_data" targetRef="Node_record" />
+    <bpmn:dataObject id="Data_notification_data" />
+    <bpmn:dataObjectReference id="DataRef_notification_data" dataObjectRef="Data_notification_data" name="Уведомление" />
+    <bpmn:association id="Association_notification_data" sourceRef="DataRef_notification_data" targetRef="Node_record_notice" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="Diagram_KT2">
+    <bpmndi:BPMNPlane id="Plane_KT2" bpmnElement="Collaboration_KT2">
+      <bpmndi:BPMNShape id="Shape_Participant_MKK" bpmnElement="Participant_MKK" isHorizontal="true">
+        <dc:Bounds x="250" y="110" width="2740" height="570" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Participant_Applicant" bpmnElement="Participant_Applicant" isHorizontal="true">
+        <dc:Bounds x="250" y="10" width="2740" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Participant_BKI" bpmnElement="Participant_BKI" isHorizontal="true">
+        <dc:Bounds x="250" y="710" width="2740" height="75" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Participant_Service" bpmnElement="Participant_Service" isHorizontal="true">
+        <dc:Bounds x="250" y="815" width="2740" height="75" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Lane_specialist" bpmnElement="Lane_specialist" isHorizontal="true">
+        <dc:Bounds x="250" y="110" width="2740" height="335" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Lane_authorized" bpmnElement="Lane_authorized" isHorizontal="true">
+        <dc:Bounds x="250" y="445" width="2740" height="235" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Node_start" bpmnElement="Node_start">
+        <dc:Bounds x="340" y="220" width="40" height="40" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Node_register" bpmnElement="Node_register">
+        <dc:Bounds x="440" y="210" width="158" height="64" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Node_check" bpmnElement="Node_check">
+        <dc:Bounds x="620" y="210" width="158" height="64" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Node_complete" bpmnElement="Node_complete">
+        <dc:Bounds x="800" y="210" width="55" height="55" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Node_request_info" bpmnElement="Node_request_info">
+        <dc:Bounds x="670" y="340" width="158" height="64" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Node_withdrawn" bpmnElement="Node_withdrawn">
+        <dc:Bounds x="850" y="345" width="55" height="55" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Node_close" bpmnElement="Node_close">
+        <dc:Bounds x="970" y="340" width="158" height="64" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Node_end_withdrawn" bpmnElement="Node_end_withdrawn">
+        <dc:Bounds x="1150" y="350" width="40" height="40" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Node_identity" bpmnElement="Node_identity">
+        <dc:Bounds x="950" y="210" width="158" height="64" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Node_restrictions" bpmnElement="Node_restrictions">
+        <dc:Bounds x="1130" y="210" width="158" height="64" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Node_restricted" bpmnElement="Node_restricted">
+        <dc:Bounds x="1310" y="210" width="55" height="55" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Node_refusal" bpmnElement="Node_refusal">
+        <dc:Bounds x="1290" y="340" width="158" height="64" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Node_consent" bpmnElement="Node_consent">
+        <dc:Bounds x="1460" y="210" width="55" height="55" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Node_bki" bpmnElement="Node_bki">
+        <dc:Bounds x="1600" y="210" width="158" height="64" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Node_bki_answer" bpmnElement="Node_bki_answer">
+        <dc:Bounds x="1780" y="210" width="55" height="55" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Node_wait_bki" bpmnElement="Node_wait_bki">
+        <dc:Bounds x="1740" y="340" width="158" height="64" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Node_payment" bpmnElement="Node_payment">
+        <dc:Bounds x="1930" y="210" width="158" height="64" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Node_proposal" bpmnElement="Node_proposal">
+        <dc:Bounds x="2120" y="210" width="158" height="64" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Node_merge" bpmnElement="Node_merge">
+        <dc:Bounds x="2300" y="210" width="55" height="55" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Node_decide" bpmnElement="Node_decide">
+        <dc:Bounds x="2420" y="520" width="158" height="64" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Node_record" bpmnElement="Node_record">
+        <dc:Bounds x="2620" y="520" width="158" height="64" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Node_notify" bpmnElement="Node_notify">
+        <dc:Bounds x="2790" y="210" width="158" height="64" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Node_record_notice" bpmnElement="Node_record_notice">
+        <dc:Bounds x="2600" y="340" width="158" height="64" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Node_delivered" bpmnElement="Node_delivered">
+        <dc:Bounds x="2420" y="345" width="55" height="55" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Node_end_notified" bpmnElement="Node_end_notified">
+        <dc:Bounds x="2260" y="350" width="40" height="40" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_DataRef_form" bpmnElement="DataRef_form">
+        <dc:Bounds x="620" y="125" width="42" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_DataRef_application" bpmnElement="DataRef_application">
+        <dc:Bounds x="650" y="125" width="42" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_DataRef_document" bpmnElement="DataRef_document">
+        <dc:Bounds x="720" y="125" width="42" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_DataRef_consent_data" bpmnElement="DataRef_consent_data">
+        <dc:Bounds x="950" y="125" width="42" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_DataRef_check_result" bpmnElement="DataRef_check_result">
+        <dc:Bounds x="1130" y="125" width="42" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_DataRef_proposal_data" bpmnElement="DataRef_proposal_data">
+        <dc:Bounds x="2120" y="125" width="42" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_DataRef_decision_data" bpmnElement="DataRef_decision_data">
+        <dc:Bounds x="2620" y="360" width="42" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_DataRef_notification_data" bpmnElement="DataRef_notification_data">
+        <dc:Bounds x="2600" y="360" width="42" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Edge_Flow_1" bpmnElement="Flow_1">
+        <di:waypoint x="360" y="240" />
+        <di:waypoint x="519" y="242" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_Flow_2" bpmnElement="Flow_2">
+        <di:waypoint x="519" y="242" />
+        <di:waypoint x="699" y="242" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_Flow_3" bpmnElement="Flow_3">
+        <di:waypoint x="699" y="242" />
+        <di:waypoint x="827" y="237" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_Flow_4" bpmnElement="Flow_4">
+        <di:waypoint x="827" y="237" />
+        <di:waypoint x="1029" y="242" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_Flow_5" bpmnElement="Flow_5">
+        <di:waypoint x="827" y="237" />
+        <di:waypoint x="749" y="372" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_Flow_6" bpmnElement="Flow_6">
+        <di:waypoint x="749" y="372" />
+        <di:waypoint x="877" y="372" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_Flow_7" bpmnElement="Flow_7">
+        <di:waypoint x="877" y="372" />
+        <di:waypoint x="1049" y="372" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_Flow_8" bpmnElement="Flow_8">
+        <di:waypoint x="877" y="372" />
+        <di:waypoint x="699" y="242" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_Flow_9" bpmnElement="Flow_9">
+        <di:waypoint x="1049" y="372" />
+        <di:waypoint x="1170" y="370" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_Flow_10" bpmnElement="Flow_10">
+        <di:waypoint x="1029" y="242" />
+        <di:waypoint x="1209" y="242" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_Flow_11" bpmnElement="Flow_11">
+        <di:waypoint x="1209" y="242" />
+        <di:waypoint x="1337" y="237" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_Flow_12" bpmnElement="Flow_12">
+        <di:waypoint x="1337" y="237" />
+        <di:waypoint x="1369" y="372" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_Flow_13" bpmnElement="Flow_13">
+        <di:waypoint x="1337" y="237" />
+        <di:waypoint x="1487" y="237" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_Flow_14" bpmnElement="Flow_14">
+        <di:waypoint x="1369" y="372" />
+        <di:waypoint x="2327" y="237" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_Flow_15" bpmnElement="Flow_15">
+        <di:waypoint x="1487" y="237" />
+        <di:waypoint x="1679" y="242" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_Flow_16" bpmnElement="Flow_16">
+        <di:waypoint x="1487" y="237" />
+        <di:waypoint x="2009" y="242" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_Flow_17" bpmnElement="Flow_17">
+        <di:waypoint x="1679" y="242" />
+        <di:waypoint x="1807" y="237" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_Flow_18" bpmnElement="Flow_18">
+        <di:waypoint x="1807" y="237" />
+        <di:waypoint x="2009" y="242" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_Flow_19" bpmnElement="Flow_19">
+        <di:waypoint x="1807" y="237" />
+        <di:waypoint x="1819" y="372" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_Flow_20" bpmnElement="Flow_20">
+        <di:waypoint x="1819" y="372" />
+        <di:waypoint x="1679" y="242" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_Flow_21" bpmnElement="Flow_21">
+        <di:waypoint x="2009" y="242" />
+        <di:waypoint x="2199" y="242" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_Flow_22" bpmnElement="Flow_22">
+        <di:waypoint x="2199" y="242" />
+        <di:waypoint x="2327" y="237" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_Flow_23" bpmnElement="Flow_23">
+        <di:waypoint x="2327" y="237" />
+        <di:waypoint x="2499" y="552" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_Flow_24" bpmnElement="Flow_24">
+        <di:waypoint x="2499" y="552" />
+        <di:waypoint x="2699" y="552" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_Flow_25" bpmnElement="Flow_25">
+        <di:waypoint x="2699" y="552" />
+        <di:waypoint x="2869" y="242" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_Flow_26" bpmnElement="Flow_26">
+        <di:waypoint x="2869" y="242" />
+        <di:waypoint x="2679" y="372" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_Flow_27" bpmnElement="Flow_27">
+        <di:waypoint x="2679" y="372" />
+        <di:waypoint x="2447" y="372" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_Flow_28" bpmnElement="Flow_28">
+        <di:waypoint x="2447" y="372" />
+        <di:waypoint x="2280" y="370" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_Flow_29" bpmnElement="Flow_29">
+        <di:waypoint x="2447" y="372" />
+        <di:waypoint x="2869" y="242" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_Association_form" bpmnElement="Association_form">
+        <di:waypoint x="641" y="150" />
+        <di:waypoint x="519" y="242" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_Association_application" bpmnElement="Association_application">
+        <di:waypoint x="671" y="150" />
+        <di:waypoint x="699" y="242" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_Association_document" bpmnElement="Association_document">
+        <di:waypoint x="741" y="150" />
+        <di:waypoint x="699" y="242" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_Association_consent_data" bpmnElement="Association_consent_data">
+        <di:waypoint x="971" y="150" />
+        <di:waypoint x="1029" y="242" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_Association_check_result" bpmnElement="Association_check_result">
+        <di:waypoint x="1151" y="150" />
+        <di:waypoint x="1209" y="242" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_Association_proposal_data" bpmnElement="Association_proposal_data">
+        <di:waypoint x="2141" y="150" />
+        <di:waypoint x="2199" y="242" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_Association_decision_data" bpmnElement="Association_decision_data">
+        <di:waypoint x="2641" y="385" />
+        <di:waypoint x="2699" y="552" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_Association_notification_data" bpmnElement="Association_notification_data">
+        <di:waypoint x="2621" y="385" />
+        <di:waypoint x="2679" y="372" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_MessageFlow_1" bpmnElement="MessageFlow_1">
+        <di:waypoint x="519" y="50" />
+        <di:waypoint x="519" y="242" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_MessageFlow_2" bpmnElement="MessageFlow_2">
+        <di:waypoint x="749" y="372" />
+        <di:waypoint x="749" y="50" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_MessageFlow_3" bpmnElement="MessageFlow_3">
+        <di:waypoint x="699" y="50" />
+        <di:waypoint x="699" y="242" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_MessageFlow_4" bpmnElement="MessageFlow_4">
+        <di:waypoint x="1679" y="242" />
+        <di:waypoint x="1679" y="747" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_MessageFlow_5" bpmnElement="MessageFlow_5">
+        <di:waypoint x="1807" y="747" />
+        <di:waypoint x="1807" y="237" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_MessageFlow_6" bpmnElement="MessageFlow_6">
+        <di:waypoint x="2869" y="242" />
+        <di:waypoint x="2869" y="852" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_MessageFlow_7" bpmnElement="MessageFlow_7">
+        <di:waypoint x="2679" y="852" />
+        <di:waypoint x="2679" y="372" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_MessageFlow_8" bpmnElement="MessageFlow_8">
+        <di:waypoint x="2869" y="242" />
+        <di:waypoint x="2869" y="50" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>
