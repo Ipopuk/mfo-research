@@ -58,6 +58,8 @@ def model_structure() -> None:
     tasks = [node.attrib["name"] for node in bpmn.iter(f"{namespace}task")]
     assert len(tasks) == 15, f"Expected 15 BPMN tasks, found {len(tasks)}"
     assert set(OPERATIONS).issubset(tasks)
+    assert "Закрыть заявку с основанием" in tasks
+    assert any(node.get("name") == "Отзыв или срок истёк?" for node in bpmn.iter(f"{namespace}exclusiveGateway"))
     assert len(list(bpmn.iter(f"{namespace}startEvent"))) == 1
     assert len(list(bpmn.iter(f"{namespace}endEvent"))) >= 2
     assert len(list(bpmn.iter(f"{namespace}dataObjectReference"))) >= 8

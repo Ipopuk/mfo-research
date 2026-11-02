@@ -60,11 +60,16 @@ def add_picture(document: Document, path: Path, label: str):
     item.add_run().add_picture(str(path), width=available)
     caption(document, label)
 
-    # The overview stays in the report. Two overlapping details make small
-    # diagram labels legible when the document is printed on A4 paper.
+    # Keep the complete overview and show overlapping details at print size.
     with Image.open(path) as image:
         w, h = image.size
-        if w / h >= 1.45:
+        if w / h >= 2.5:
+            left, right = int(w * .075), int(w * .985)
+            panel = int((right - left) / 4 + 85)
+            step = (right - left - panel) / 3
+            boxes = [(int(left + index * step), 0,
+                      int(left + index * step + panel), h) for index in range(4)]
+        elif w / h >= 1.45:
             boxes = [(0, 0, int(w * .57), h), (int(w * .43), 0, w, h)]
         else:
             boxes = [(0, 0, w, int(h * .57)), (0, int(h * .43), w, h)]
