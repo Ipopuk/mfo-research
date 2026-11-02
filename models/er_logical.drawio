@@ -1,0 +1,68 @@
+<?xml version='1.0' encoding='utf-8'?>
+<mxfile host="app.diagrams.net" type="device">
+  <diagram id="kt2-er" name="ER logical">
+    <mxGraphModel dx="1800" dy="1050" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1800" pageHeight="1050" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="Applicant" value="Заявитель&#10;PK applicant_id&#10;ФИО&#10;Контакт" style="rounded=0;whiteSpace=wrap;html=0;align=left;verticalAlign=top;spacing=9;fontSize=15;strokeColor=#334155;fillColor=#eff6ff;" vertex="1" parent="1">
+          <mxGeometry x="70" y="390" width="270" height="155" as="geometry" />
+        </mxCell>
+        <mxCell id="Application" value="Заявка&#10;PK application_id&#10;FK applicant_id&#10;Сумма, срок&#10;Статус, дата поступления" style="rounded=0;whiteSpace=wrap;html=0;align=left;verticalAlign=top;spacing=9;fontSize=15;strokeColor=#334155;fillColor=#eff6ff;" vertex="1" parent="1">
+          <mxGeometry x="690" y="370" width="300" height="190" as="geometry" />
+        </mxCell>
+        <mxCell id="Document" value="Документ&#10;PK document_id&#10;Вид&#10;Действителен" style="rounded=0;whiteSpace=wrap;html=0;align=left;verticalAlign=top;spacing=9;fontSize=15;strokeColor=#334155;fillColor=#eff6ff;" vertex="1" parent="1">
+          <mxGeometry x="1460" y="90" width="270" height="155" as="geometry" />
+        </mxCell>
+        <mxCell id="ApplicationDocument" value="ДокументЗаявки&#10;PK, FK application_id&#10;PK, FK document_id&#10;Дата получения" style="rounded=0;whiteSpace=wrap;html=0;align=left;verticalAlign=top;spacing=9;fontSize=15;strokeColor=#334155;fillColor=#eff6ff;" vertex="1" parent="1">
+          <mxGeometry x="1100" y="85" width="300" height="170" as="geometry" />
+        </mxCell>
+        <mxCell id="Consent" value="Согласие&#10;PK consent_id&#10;FK application_id&#10;Вид, дата, статус" style="rounded=0;whiteSpace=wrap;html=0;align=left;verticalAlign=top;spacing=9;fontSize=15;strokeColor=#334155;fillColor=#eff6ff;" vertex="1" parent="1">
+          <mxGeometry x="1440" y="390" width="290" height="155" as="geometry" />
+        </mxCell>
+        <mxCell id="CheckResult" value="РезультатПроверки&#10;PK check_id&#10;FK application_id&#10;Вид, источник&#10;Дата, результат" style="rounded=0;whiteSpace=wrap;html=0;align=left;verticalAlign=top;spacing=9;fontSize=15;strokeColor=#334155;fillColor=#eff6ff;" vertex="1" parent="1">
+          <mxGeometry x="1440" y="710" width="290" height="185" as="geometry" />
+        </mxCell>
+        <mxCell id="Income" value="Доход&#10;PK income_id&#10;FK applicant_id&#10;Месячная сумма&#10;Подтверждён" style="rounded=0;whiteSpace=wrap;html=0;align=left;verticalAlign=top;spacing=9;fontSize=15;strokeColor=#334155;fillColor=#eff6ff;" vertex="1" parent="1">
+          <mxGeometry x="65" y="70" width="270" height="185" as="geometry" />
+        </mxCell>
+        <mxCell id="Obligation" value="Обязательство&#10;PK obligation_id&#10;FK applicant_id&#10;Месячный платёж&#10;Активно" style="rounded=0;whiteSpace=wrap;html=0;align=left;verticalAlign=top;spacing=9;fontSize=15;strokeColor=#334155;fillColor=#eff6ff;" vertex="1" parent="1">
+          <mxGeometry x="390" y="70" width="275" height="185" as="geometry" />
+        </mxCell>
+        <mxCell id="Decision" value="Решение&#10;PK decision_id&#10;FK application_id&#10;Исход, причина&#10;Согласованные условия" style="rounded=0;whiteSpace=wrap;html=0;align=left;verticalAlign=top;spacing=9;fontSize=15;strokeColor=#334155;fillColor=#eff6ff;" vertex="1" parent="1">
+          <mxGeometry x="690" y="785" width="300" height="185" as="geometry" />
+        </mxCell>
+        <mxCell id="Notification" value="Уведомление&#10;PK notification_id&#10;FK decision_id&#10;Канал, дата&#10;Статус передачи" style="rounded=0;whiteSpace=wrap;html=0;align=left;verticalAlign=top;spacing=9;fontSize=15;strokeColor=#334155;fillColor=#eff6ff;" vertex="1" parent="1">
+          <mxGeometry x="70" y="785" width="280" height="185" as="geometry" />
+        </mxCell>
+        <mxCell id="Relation_1" value="1:N" style="entityRelationEdgeStyle;html=0;rounded=0;jettySize=auto;orthogonalLoop=1;startArrow=ERone;endArrow=ERmany;startFill=0;endFill=0;strokeColor=#475569;fontSize=13;" edge="1" parent="1" source="Applicant" target="Application">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Relation_2" value="1:N" style="entityRelationEdgeStyle;html=0;rounded=0;jettySize=auto;orthogonalLoop=1;startArrow=ERone;endArrow=ERmany;startFill=0;endFill=0;strokeColor=#475569;fontSize=13;" edge="1" parent="1" source="Applicant" target="Income">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Relation_3" value="1:N" style="entityRelationEdgeStyle;html=0;rounded=0;jettySize=auto;orthogonalLoop=1;startArrow=ERone;endArrow=ERmany;startFill=0;endFill=0;strokeColor=#475569;fontSize=13;" edge="1" parent="1" source="Applicant" target="Obligation">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Relation_4" value="1:N" style="entityRelationEdgeStyle;html=0;rounded=0;jettySize=auto;orthogonalLoop=1;startArrow=ERone;endArrow=ERmany;startFill=0;endFill=0;strokeColor=#475569;fontSize=13;" edge="1" parent="1" source="Application" target="ApplicationDocument">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Relation_5" value="1:N" style="entityRelationEdgeStyle;html=0;rounded=0;jettySize=auto;orthogonalLoop=1;startArrow=ERone;endArrow=ERmany;startFill=0;endFill=0;strokeColor=#475569;fontSize=13;" edge="1" parent="1" source="Document" target="ApplicationDocument">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Relation_6" value="1:N" style="entityRelationEdgeStyle;html=0;rounded=0;jettySize=auto;orthogonalLoop=1;startArrow=ERone;endArrow=ERmany;startFill=0;endFill=0;strokeColor=#475569;fontSize=13;" edge="1" parent="1" source="Application" target="Consent">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Relation_7" value="1:N" style="entityRelationEdgeStyle;html=0;rounded=0;jettySize=auto;orthogonalLoop=1;startArrow=ERone;endArrow=ERmany;startFill=0;endFill=0;strokeColor=#475569;fontSize=13;" edge="1" parent="1" source="Application" target="CheckResult">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Relation_8" value="1:0..1" style="entityRelationEdgeStyle;html=0;rounded=0;jettySize=auto;orthogonalLoop=1;startArrow=ERone;endArrow=ERone;startFill=0;endFill=0;strokeColor=#475569;fontSize=13;" edge="1" parent="1" source="Application" target="Decision">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Relation_9" value="1:N" style="entityRelationEdgeStyle;html=0;rounded=0;jettySize=auto;orthogonalLoop=1;startArrow=ERone;endArrow=ERmany;startFill=0;endFill=0;strokeColor=#475569;fontSize=13;" edge="1" parent="1" source="Decision" target="Notification">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
