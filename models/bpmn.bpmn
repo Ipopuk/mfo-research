@@ -304,28 +304,28 @@
         <dc:Bounds x="2260" y="350" width="40" height="40" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Shape_DataRef_form" bpmnElement="DataRef_form">
-        <dc:Bounds x="620" y="125" width="42" height="50" />
+        <dc:Bounds x="600" y="125" width="100" height="50" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Shape_DataRef_application" bpmnElement="DataRef_application">
-        <dc:Bounds x="650" y="125" width="42" height="50" />
+        <dc:Bounds x="730" y="125" width="100" height="50" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Shape_DataRef_document" bpmnElement="DataRef_document">
-        <dc:Bounds x="720" y="125" width="42" height="50" />
+        <dc:Bounds x="860" y="125" width="100" height="50" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Shape_DataRef_consent_data" bpmnElement="DataRef_consent_data">
-        <dc:Bounds x="950" y="125" width="42" height="50" />
+        <dc:Bounds x="1000" y="125" width="100" height="50" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Shape_DataRef_check_result" bpmnElement="DataRef_check_result">
-        <dc:Bounds x="1130" y="125" width="42" height="50" />
+        <dc:Bounds x="1170" y="125" width="100" height="50" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Shape_DataRef_proposal_data" bpmnElement="DataRef_proposal_data">
-        <dc:Bounds x="2120" y="125" width="42" height="50" />
+        <dc:Bounds x="2110" y="125" width="100" height="50" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Shape_DataRef_decision_data" bpmnElement="DataRef_decision_data">
-        <dc:Bounds x="2620" y="360" width="42" height="50" />
+        <dc:Bounds x="2600" y="610" width="100" height="50" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Shape_DataRef_notification_data" bpmnElement="DataRef_notification_data">
-        <dc:Bounds x="2600" y="360" width="42" height="50" />
+        <dc:Bounds x="2800" y="345" width="100" height="50" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="Edge_Flow_1" bpmnElement="Flow_1">
         <di:waypoint x="360" y="240" />
@@ -444,35 +444,35 @@
         <di:waypoint x="2869" y="242" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Edge_Association_form" bpmnElement="Association_form">
-        <di:waypoint x="641" y="150" />
+        <di:waypoint x="650" y="150" />
         <di:waypoint x="519" y="242" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Edge_Association_application" bpmnElement="Association_application">
-        <di:waypoint x="671" y="150" />
+        <di:waypoint x="780" y="150" />
         <di:waypoint x="699" y="242" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Edge_Association_document" bpmnElement="Association_document">
-        <di:waypoint x="741" y="150" />
+        <di:waypoint x="910" y="150" />
         <di:waypoint x="699" y="242" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Edge_Association_consent_data" bpmnElement="Association_consent_data">
-        <di:waypoint x="971" y="150" />
+        <di:waypoint x="1050" y="150" />
         <di:waypoint x="1029" y="242" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Edge_Association_check_result" bpmnElement="Association_check_result">
-        <di:waypoint x="1151" y="150" />
+        <di:waypoint x="1220" y="150" />
         <di:waypoint x="1209" y="242" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Edge_Association_proposal_data" bpmnElement="Association_proposal_data">
-        <di:waypoint x="2141" y="150" />
+        <di:waypoint x="2160" y="150" />
         <di:waypoint x="2199" y="242" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Edge_Association_decision_data" bpmnElement="Association_decision_data">
-        <di:waypoint x="2641" y="385" />
+        <di:waypoint x="2650" y="635" />
         <di:waypoint x="2699" y="552" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Edge_Association_notification_data" bpmnElement="Association_notification_data">
-        <di:waypoint x="2621" y="385" />
+        <di:waypoint x="2850" y="370" />
         <di:waypoint x="2679" y="372" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Edge_MessageFlow_1" bpmnElement="MessageFlow_1">

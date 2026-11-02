@@ -7,9 +7,11 @@ Run with --source first; --png creates the raster from the same node/flow data.
 from __future__ import annotations
 
 import argparse
+import math
 from pathlib import Path
-import subprocess
 import xml.etree.ElementTree as ET
+
+from PIL import Image, ImageDraw, ImageFont
 
 
 MODEL = "http://www.omg.org/spec/BPMN/20100524/MODEL"
@@ -192,10 +194,10 @@ def build_source(path: Path) -> None:
         width, height = node_size(kind)
         positions[node_id] = (x, y, width, height)
         shape(f"Node_{node_id}", positions[node_id])
-    for i, (code, _, _) in enumerate(DATA):
-        x = (620, 650, 720, 950, 1130, 2120, 2620, 2600)[i]
-        y = 125 if i < 6 else 360
-        shape(f"DataRef_{code}", (x, y, 42, 50))
+    data_positions = [(600, 125), (730, 125), (860, 125), (1000, 125),
+                      (1170, 125), (2110, 125), (2600, 610), (2800, 345)]
+    for (code, _, _), (x, y) in zip(DATA, data_positions):
+        shape(f"DataRef_{code}", (x, y, 100, 50))
 
     def edge(element_id: str, source: tuple[int, int], target: tuple[int, int]) -> None:
         node = ET.SubElement(plane, q(BPMNDI, "BPMNEdge"), {
@@ -208,11 +210,9 @@ def build_source(path: Path) -> None:
         sx, sy, sw, sh = positions[source]
         tx, ty, tw, th = positions[target]
         edge(f"Flow_{i}", (sx + sw // 2, sy + sh // 2), (tx + tw // 2, ty + th // 2))
-    for i, (code, _, task) in enumerate(DATA):
-        x = (620, 650, 720, 950, 1130, 2120, 2620, 2600)[i]
-        y = 125 if i < 6 else 360
+    for (code, _, task), (x, y) in zip(DATA, data_positions):
         tx, ty, tw, th = positions[task]
-        edge(f"Association_{code}", (x + 21, y + 25), (tx + tw // 2, ty + th // 2))
+        edge(f"Association_{code}", (x + 50, y + 25), (tx + tw // 2, ty + th // 2))
     external_y = {"Applicant": 50, "BKI": 747, "Service": 852}
     for i, (source, target, _) in enumerate(MESSAGES, 1):
         if source in external_y:
@@ -228,44 +228,148 @@ def build_source(path: Path) -> None:
 
 
 def build_png(path: Path) -> None:
-    """Render the same BPMN nodes and flows as a labeled review image."""
-    def escape(label: str) -> str:
-        return label.replace("\\", "\\\\").replace('"', '\\"')
+    """Render the exact source nodes/flows on the fixed BPMN DI canvas."""
+    image = Image.new("RGB", (3040, 915), "white")
+    draw = ImageDraw.Draw(image)
+    font = ImageFont.truetype("C:/Windows/Fonts/arial.ttf", 16)
+    small = ImageFont.truetype("C:/Windows/Fonts/arial.ttf", 13)
+    title = ImageFont.truetype("C:/Windows/Fonts/arialbd.ttf", 18)
+    palette = {"line": "#334155", "pool": "#1d4ed8", "lane": "#93c5fd",
+               "data": "#fef3c7", "highlight": "#dcfce7", "message": "#64748b"}
+    boxes = {code: (x, y, *node_size(kind)) for code, kind, _, _, x, y in NODES}
 
-    lines = [
-        "digraph KT2 {",
-        'graph [rankdir=LR, bgcolor="white", pad="0.3", nodesep="0.6", ranksep="0.85", fontsize=20, fontname="Arial", label="КТ2 — рассмотрение заявки на микрозаём"];',
-        'node [fontname="Arial", fontsize=12, color="#334155", style="filled", fillcolor="white"];',
-        'edge [fontname="Arial", fontsize=10, color="#475569", arrowsize=0.7];',
-        'subgraph cluster_mkk { label="Микрокредитная компания"; color="#1d4ed8"; penwidth=2;',
-        'subgraph cluster_specialist { label="Кредитный специалист"; color="#93c5fd";',
-    ]
-    for node_id, kind, label, owner, _, _ in NODES:
-        if owner != "specialist":
-            continue
-        shape = "ellipse" if kind in {"startEvent", "endEvent"} else "diamond" if kind == "exclusiveGateway" else "box"
-        fill = "#dcfce7" if node_id in {"check", "payment", "record_notice"} else "white"
-        lines.append(f'Node_{node_id} [label="{escape(label)}", shape={shape}, fillcolor="{fill}"];')
-    lines += ['}', 'subgraph cluster_authorized { label="Уполномоченный сотрудник"; color="#93c5fd";']
-    for node_id, kind, label, owner, _, _ in NODES:
-        if owner == "authorized":
-            lines.append(f'Node_{node_id} [label="{escape(label)}", shape=box, fillcolor="#dcfce7"];')
-    lines += ['}', '}']
-    for code, label in (("Applicant", "Заявитель"), ("BKI", "БКИ"), ("Service", "Сервис уведомлений")):
-        lines.append(f'Participant_{code} [label="{label}", shape=box, style="rounded,dashed", color="#64748b"];')
+    def text_center(value: str, rect: tuple[int, int, int, int], face=font, fill="#0f172a") -> None:
+        x, y, w, h = rect
+        words = value.split()
+        rows = []
+        current = ""
+        for word in words:
+            candidate = (current + " " + word).strip()
+            if current and draw.textbbox((0, 0), candidate, font=face)[2] > w - 12:
+                rows.append(current)
+                current = word
+            else:
+                current = candidate
+        if current:
+            rows.append(current)
+        height = len(rows) * 19
+        for index, row in enumerate(rows):
+            width = draw.textbbox((0, 0), row, font=face)[2]
+            draw.text((x + (w - width) / 2, y + (h - height) / 2 + index * 19),
+                      row, font=face, fill=fill)
+
+    def segment(a: tuple[int, int], b: tuple[int, int], color: str, dashed=False) -> None:
+        if not dashed:
+            draw.line((a, b), fill=color, width=2)
+            return
+        length = math.dist(a, b)
+        if not length:
+            return
+        count = max(1, int(length / 12))
+        for i in range(count):
+            if i % 2 == 0:
+                p = (a[0] + (b[0] - a[0]) * i / count, a[1] + (b[1] - a[1]) * i / count)
+                q = (a[0] + (b[0] - a[0]) * (i + 1) / count,
+                     a[1] + (b[1] - a[1]) * (i + 1) / count)
+                draw.line((p, q), fill=color, width=2)
+
+    def arrow(points: list[tuple[int, int]], color="#334155", dashed=False) -> None:
+        for a, b in zip(points, points[1:]):
+            segment(a, b, color, dashed)
+        a, b = points[-2:]
+        angle = math.atan2(b[1] - a[1], b[0] - a[0])
+        left = (b[0] - 10 * math.cos(angle - .45), b[1] - 10 * math.sin(angle - .45))
+        right = (b[0] - 10 * math.cos(angle + .45), b[1] - 10 * math.sin(angle + .45))
+        draw.polygon((b, left, right), fill=color)
+
+    draw.text((260, 0), "КТ2. Рассмотрение заявки на потребительский микрозаём", font=title, fill="#0f172a")
+    for x1, y1, x2, y2, label in (
+        (250, 30, 2990, 100, "Заявитель"),
+        (250, 110, 2990, 680, "Микрокредитная компания"),
+        (250, 710, 2990, 785, "Бюро кредитных историй"),
+        (250, 815, 2990, 890, "Сервис уведомлений"),
+    ):
+        draw.rectangle((x1, y1, x2, y2), outline=palette["pool"], width=2)
+        draw.text((x1 + 8, y1 + 6), label, font=title, fill=palette["pool"])
+    draw.rectangle((250, 110, 2990, 445), outline=palette["lane"], width=2)
+    draw.rectangle((250, 445, 2990, 680), outline=palette["lane"], width=2)
+    draw.text((260, 420), "Кредитный специалист", font=small, fill=palette["pool"])
+    draw.text((260, 655), "Уполномоченный сотрудник", font=small, fill=palette["pool"])
+
+    bypass = {("consent", "payment"): 190, ("refusal", "merge"): 425,
+              ("withdrawn", "check"): 428, ("wait_bki", "bki"): 425,
+              ("delivered", "notify"): 430}
     for source, target, label in FLOWS:
-        attr = f' [label="{escape(label)}"]' if label else ""
-        lines.append(f"Node_{source} -> Node_{target}{attr};")
+        sx, sy, sw, sh = boxes[source]
+        tx, ty, tw, th = boxes[target]
+        a = (sx + sw // 2, sy + sh // 2)
+        b = (tx + tw // 2, ty + th // 2)
+        if (source, target) in bypass:
+            via = bypass[(source, target)]
+            a = (a[0], sy + sh if via > a[1] else sy)
+            b = (b[0], ty + th if via > b[1] else ty)
+            points = [a, (a[0], via), (b[0], via), b]
+        elif tx > sx and abs(b[1] - a[1]) < 75:
+            points = [(sx + sw, a[1]), (tx, b[1])]
+        elif target == "record_notice":
+            points = [(sx + sw // 2, sy + sh), (sx + sw // 2, 410),
+                      (tx + tw // 2, 410), (tx + tw // 2, ty + sh)]
+        elif target == "notify":
+            points = [(sx + sw // 2, sy), (sx + sw // 2, 470),
+                      (tx + tw // 2, 470), (tx + tw // 2, ty + th)]
+        else:
+            points = [a, (b[0], a[1]), b]
+        arrow(points)
+        if label:
+            middle = points[len(points) // 2]
+            width = draw.textbbox((0, 0), label, font=small)[2]
+            draw.rectangle((middle[0] - width / 2 - 3, middle[1] - 17,
+                            middle[0] + width / 2 + 3, middle[1] + 1), fill="white")
+            draw.text((middle[0] - width / 2, middle[1] - 17), label, font=small,
+                      fill=palette["line"])
+
     for source, target, label in MESSAGES:
-        s = f"Participant_{source}" if source in {"Applicant", "BKI", "Service"} else f"Node_{source}"
-        t = f"Participant_{target}" if target in {"Applicant", "BKI", "Service"} else f"Node_{target}"
-        lines.append(f'{s} -> {t} [style=dashed, color="#64748b", label="{escape(label)}", constraint=false];')
-    for code, label, task in DATA:
-        lines.append(f'DataRef_{code} [label="{escape(label)}", shape=note, fillcolor="#fef9c3"];')
-        lines.append(f'DataRef_{code} -> Node_{task} [style=dotted, arrowhead=none, constraint=false];')
-    lines.append("}")
+        if source in {"Applicant", "BKI", "Service"}:
+            x, y, w, h = boxes[target]
+            a = (x + w // 2, {"Applicant": 100, "BKI": 710, "Service": 815}[source])
+            b = (x + w // 2, y + h // 2)
+        else:
+            x, y, w, h = boxes[source]
+            a = (x + w // 2, y + h // 2)
+            b = (x + w // 2, {"Applicant": 100, "BKI": 710, "Service": 815}[target])
+        arrow([a, b], palette["message"], True)
+        draw.text((a[0] + 4, (a[1] + b[1]) / 2), label, font=small, fill=palette["message"])
+
+    data_positions = [(600, 125), (730, 125), (860, 125), (1000, 125),
+                      (1170, 125), (2110, 125), (2600, 610), (2800, 345)]
+    for (code, label, task), (x, y) in zip(DATA, data_positions):
+        tx, ty, tw, th = boxes[task]
+        segment((x + 50, y + 45), (tx + tw // 2, ty + th // 2), "#a16207", True)
+        draw.polygon(((x, y), (x + 90, y), (x + 100, y + 10),
+                      (x + 100, y + 50), (x, y + 50)),
+                     fill=palette["data"], outline="#a16207")
+        text_center(label, (x + 3, y + 3, 94, 44), small)
+
+    for code, kind, label, _, x, y in NODES:
+        w, h = node_size(kind)
+        fill = palette["highlight"] if code in {"check", "payment", "record", "record_notice"} else "white"
+        if kind == "task":
+            draw.rounded_rectangle((x, y, x + w, y + h), radius=8,
+                                   fill=fill, outline=palette["line"], width=2)
+            text_center(label, (x + 2, y + 2, w - 4, h - 4), small)
+        elif kind == "exclusiveGateway":
+            draw.polygon(((x + w // 2, y), (x + w, y + h // 2),
+                          (x + w // 2, y + h), (x, y + h // 2)),
+                         fill="white", outline=palette["line"])
+            label_y = y + h + 5 if y < 300 else y - 41
+            text_center(label, (x - 45, label_y, w + 90, 38), small)
+        else:
+            draw.ellipse((x, y, x + w, y + h), fill="white",
+                         outline=palette["line"], width=3 if kind == "endEvent" else 2)
+            text_center(label, (x - 45, y + h + 4, w + 90, 36), small)
+
     path.parent.mkdir(parents=True, exist_ok=True)
-    subprocess.run(["dot", "-Tpng", "-o", str(path)], input="\n".join(lines), text=True, encoding="utf-8", check=True)
+    image.save(path, "PNG")
 
 
 def main() -> int:
