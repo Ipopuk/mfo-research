@@ -107,6 +107,7 @@ def report_and_code() -> None:
             "2.3 Алгоритмы", "2.4 Процедурный прототип", "Рисунок 2.1",
             "Рисунок 2.2", "Рисунок 2.3", "Рисунок 2.4", "Таблица 2.1",
             "Таблица 2.2", "Фрагмент 2.1", "Фрагмент 2.2", "Introduction to Algorithms",
+            "retry_notification",
         ):
             assert phrase in visible, phrase
         for task, function in OPERATIONS.items():
