@@ -27,6 +27,7 @@ SOURCES = [
     "19. Business Process Model and Notation (BPMN), Version 2.0.2 / Object Management Group. — 2014. — URL: https://www.omg.org/spec/BPMN/2.0.2/PDF/ (дата обращения: 02.11.2026). — Текст : электронный.",
     "20. Основы проектирования баз данных / Microsoft Support. — URL: https://support.microsoft.com/ru-ru/access/database-design-basics (дата обращения: 02.11.2026). — Текст : электронный.",
     "21. ГОСТ 19.701-90. Единая система программной документации. Схемы алгоритмов, программ, данных и систем. Обозначения условные и правила выполнения. — URL: https://protect.gost.ru/gost/details/0c85e066-f89e-433d-a6d3-b7f746bd0c7c (дата обращения: 02.11.2026). — Текст : электронный.",
+    "22. Cormen, T. H. Introduction to Algorithms / T. H. Cormen, C. E. Leiserson, R. L. Rivest, C. Stein. — 4th ed. — Cambridge, MA : The MIT Press, 2022. — URL: https://mitpress.mit.edu/9780262046305/introduction-to-algorithms/ (accessed: 02.11.2026). — Text : electronic.",
 ]
 
 
@@ -82,14 +83,23 @@ def add_table(document: Document, rows: list[list[str]]):
     table = document.add_table(rows=0, cols=len(rows[0]))
     table.style = "Table Grid"
     table.alignment = WD_TABLE_ALIGNMENT.CENTER
+    is_entity_table = rows[0][0] == "Сущность"
+    if is_entity_table:
+        table.autofit = False
+        widths = [Cm(3.8), Cm(7.0), Cm(5.7)]
+        for column, width in zip(table.columns, widths):
+            column.width = width
     for row_number, cells in enumerate(rows):
         row = table.add_row()
         if row_number == 0:
             row._tr.get_or_add_trPr().append(OxmlElement("w:tblHeader"))
-        for cell, value in zip(row.cells, cells):
+        for column_number, (cell, value) in enumerate(zip(row.cells, cells)):
             cell.text = value
+            if is_entity_table:
+                cell.width = widths[column_number]
             cell.vertical_alignment = WD_CELL_VERTICAL_ALIGNMENT.CENTER
             for item in cell.paragraphs:
+                item.alignment = WD_ALIGN_PARAGRAPH.LEFT
                 item.paragraph_format.space_after = Pt(0)
                 item.paragraph_format.line_spacing = 1.0
                 for run in item.runs:
@@ -97,6 +107,17 @@ def add_table(document: Document, rows: list[list[str]]):
                     run.font.size = Pt(10)
                     run.bold = row_number == 0
     document.add_paragraph()
+
+
+def add_code(document: Document, lines: list[str]):
+    item = document.add_paragraph()
+    item.paragraph_format.left_indent = Cm(0.6)
+    item.paragraph_format.space_after = Pt(6)
+    item.paragraph_format.line_spacing = 1.0
+    item.paragraph_format.keep_together = True
+    run = item.add_run("\n".join(lines))
+    run.font.name = "Courier New"
+    run.font.size = Pt(9)
 
 
 def build():
@@ -140,7 +161,18 @@ def build():
                 i += 1
             add_table(document, rows)
             continue
+        elif value == "```python":
+            code = []
+            i += 1
+            while i < len(lines) and lines[i].strip() != "```":
+                code.append(lines[i])
+                i += 1
+            if i == len(lines):
+                raise ValueError("Unclosed Python code fragment")
+            add_code(document, code)
         elif value.startswith("Таблица 2."):
+            caption(document, value)
+        elif value.startswith("Фрагмент 2."):
             caption(document, value)
         else:
             paragraph(document, value)

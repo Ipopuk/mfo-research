@@ -101,9 +101,10 @@ def report_and_code() -> None:
         document = ET.fromstring(word.read("word/document.xml"))
         visible = "".join(node.text or "" for node in document.iter() if node.tag.endswith("}t"))
         for phrase in (
-            "2 АНАЛИТИЧЕСКИЙ ЭТАП", "2.1 Модель процесса", "2.2 Логическая модель",
+            "2 АНАЛИТИЧЕСКИЙ РАЗДЕЛ", "2.1 Модель процесса", "2.2 Логическая модель",
             "2.3 Алгоритмы", "2.4 Процедурный прототип", "Рисунок 2.1",
             "Рисунок 2.2", "Рисунок 2.3", "Рисунок 2.4", "Таблица 2.1",
+            "Таблица 2.2", "Фрагмент 2.1", "Фрагмент 2.2", "Introduction to Algorithms",
         ):
             assert phrase in visible, phrase
         for task, function in OPERATIONS.items():
