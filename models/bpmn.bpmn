@@ -67,12 +67,12 @@
       <bpmn:incoming>Flow_5</bpmn:incoming>
       <bpmn:outgoing>Flow_6</bpmn:outgoing>
     </bpmn:task>
-    <bpmn:exclusiveGateway id="Node_withdrawn" name="Заявка отозвана?">
+    <bpmn:exclusiveGateway id="Node_withdrawn" name="Отзыв или срок истёк?">
       <bpmn:incoming>Flow_6</bpmn:incoming>
       <bpmn:outgoing>Flow_7</bpmn:outgoing>
       <bpmn:outgoing>Flow_8</bpmn:outgoing>
     </bpmn:exclusiveGateway>
-    <bpmn:task id="Node_close" name="Закрыть отозванную заявку">
+    <bpmn:task id="Node_close" name="Закрыть заявку с основанием">
       <bpmn:incoming>Flow_7</bpmn:incoming>
       <bpmn:outgoing>Flow_9</bpmn:outgoing>
     </bpmn:task>
