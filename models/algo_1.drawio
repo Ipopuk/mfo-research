@@ -174,8 +174,8 @@
         <mxCell id="flow_20" value="Да" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=0;endArrow=block;endFill=1;strokeColor=#475569;fontSize=15;" edge="1" parent="1" source="found_check" target="kind_loop">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
-              <mxPoint x="1510" y="1327" />
-              <mxPoint x="1510" y="690" />
+              <mxPoint x="1610" y="1327" />
+              <mxPoint x="1610" y="690" />
             </Array>
           </mxGeometry>
         </mxCell>
