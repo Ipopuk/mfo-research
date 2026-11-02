@@ -189,6 +189,8 @@ def run_case(data: dict) -> dict:
     result.update({"application": updated_application,
                    "decision": decision,
                    "notification": notification})
+    if not notification["sent"]:
+        result["next_step"] = "retry_notification"
     return result
 
 

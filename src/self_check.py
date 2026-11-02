@@ -15,6 +15,12 @@ def main() -> int:
     assert result["payment_load"]["payment_share_percent"] == 37.5
     assert result["decision"]["outcome"] == "approved"
 
+    undelivered = dict(data)
+    undelivered["notification"] = dict(data["notification"], sent=False)
+    retry = run_case(undelivered)
+    assert retry["notification"]["sent"] is False
+    assert retry["next_step"] == "retry_notification"
+
     missing = check_request(
         data["application"], data["applicant"],
         {row["document_id"]: row for row in data["documents"]},
