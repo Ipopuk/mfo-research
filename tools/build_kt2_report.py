@@ -147,6 +147,16 @@ def paragraph(document: Document, value: str):
     return item
 
 
+def bibliography_item(document: Document, value: str):
+    item = document.add_paragraph(style="Normal")
+    item.add_run(value)
+    item.paragraph_format.first_line_indent = Cm(0)
+    item.paragraph_format.left_indent = Cm(0)
+    item.paragraph_format.line_spacing = 1.5
+    item.paragraph_format.space_after = Pt(0)
+    return item
+
+
 def caption(document: Document, value: str):
     item = document.add_paragraph()
     item.alignment = WD_ALIGN_PARAGRAPH.CENTER
@@ -299,8 +309,16 @@ def build():
         bibliography._p.addprevious(element)
 
     for source in SOURCES:
-        new = paragraph(document, source)
+        new = bibliography_item(document, source)
         appendix._p.addprevious(new._p)
+
+    all_paragraphs = document.paragraphs
+    bibliography_start = next(i for i, item in enumerate(all_paragraphs) if item._p is bibliography._p)
+    appendix_start = next(i for i, item in enumerate(all_paragraphs) if item._p is appendix._p)
+    for item in all_paragraphs[bibliography_start + 1:appendix_start]:
+        item.alignment = WD_ALIGN_PARAGRAPH.LEFT
+        item.paragraph_format.left_indent = Cm(0)
+        item.paragraph_format.first_line_indent = Cm(0)
 
     document.core_properties.title = "Потребительское кредитование в микрофинансовой организации — КТ2"
     document.core_properties.subject = "Исследовательский и аналитический этапы"
