@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import ast
 import hashlib
+import json
 from pathlib import Path
 import subprocess
 import sys
@@ -11,6 +12,7 @@ from tempfile import TemporaryDirectory
 import xml.etree.ElementTree as ET
 from zipfile import ZipFile
 
+from docx import Document
 from PIL import Image, ImageChops
 
 
@@ -112,6 +114,47 @@ def report_and_code() -> None:
             assert phrase in visible, phrase
         for task, function in OPERATIONS.items():
             assert task in visible and f"{function}()" in visible
+
+    report = Document(REPORT)
+    paragraphs = report.paragraphs
+    toc = next(i for i, item in enumerate(paragraphs) if item.text == "СОДЕРЖАНИЕ")
+    schedule = next(i for i, item in enumerate(paragraphs) if item._p.xpath(".//w:drawing"))
+    front = paragraphs[:toc]
+    assert sum("Потребительское кредитование в микрофинансовой организации" in item.text
+               for item in front) >= 2
+    assert any("ИНДИВИДУАЛЬНОЕ ЗАДАНИЕ" in item.text for item in front)
+    assert any("Отметки о прохождении инструктажей" in item.text for item in front[:schedule])
+    assert all(not item._p.xpath(".//w:drawing") for item in front[:schedule])
+
+    def heading_index(name: str) -> int:
+        return next(i for i, item in enumerate(paragraphs)
+                    if item.style.name.startswith("Heading") and item.text.startswith(name))
+
+    review_start, review_end = heading_index("1.4 "), heading_index("1.5 ")
+    review_text = " ".join(item.text for item in paragraphs[review_start:review_end])
+    assert "Н. И. Быканова" in review_text and "N. Chai" in review_text
+    assert "[19]" in review_text and "[20]" in review_text
+    assert not any("Н. И. Быканова" in item.text for item in front)
+
+    git_start, git_end = heading_index("1.6 "), heading_index("1.7 ")
+    git_text = " ".join(item.text for item in paragraphs[git_start:git_end])
+    assert "https://github.com/Ipopuk/mfo-research" in git_text
+    assert "2.33.1.windows.1" in git_text and "1, 2 и 4 ноября 2026 года" in git_text
+    assert "Работу следует" not in git_text and "После создания личного репозитория" not in git_text
+
+    bibliography = heading_index("СПИСОК ИСПОЛЬЗОВАННЫХ ИСТОЧНИКОВ")
+    appendix = heading_index("ПРИЛОЖЕНИЕ А")
+    numbers = [int(item.text.split(".", 1)[0]) for item in paragraphs[bibliography + 1:appendix]
+               if item.text.split(".", 1)[0].isdigit()]
+    assert numbers == list(range(1, 25)), numbers
+    records = json.loads((ROOT / "docs/sources.json").read_text(encoding="utf-8"))
+    assert len(records) == 20 and sum(item["reviewed"] for item in records) == 7
+    assert sum(item["domestic"] for item in records) == 11
+    section = report.sections[0]
+    assert report.styles["Normal"].font.name == "Times New Roman"
+    assert report.styles["Normal"].font.size.pt == 14
+    assert [round(value.cm, 1) for value in
+            (section.left_margin, section.right_margin, section.top_margin, section.bottom_margin)] == [3, 1, 2, 2]
     subprocess.run([sys.executable, str(ROOT / "src/self_check.py")], check=True)
 
 
@@ -119,7 +162,7 @@ def main() -> int:
     generated_files()
     model_structure()
     report_and_code()
-    print("KT2 validation: eight models reproduce exactly; BPMN, ER, flowcharts, report and code agree.")
+    print("KT2 validation: models reproduce; report, bibliography, front matter and code agree.")
     return 0
 
 
