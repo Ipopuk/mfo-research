@@ -23,4 +23,11 @@ public abstract sealed class Decision permits Approval, Refusal {
     public abstract String outcome();
     public abstract BigDecimal approvedAmount();
     public abstract Integer approvedTermMonths();
+
+    public Notification recordNotification(String notificationId, String channel, boolean sent) {
+        if (channel == null || channel.isEmpty()) {
+            throw new IllegalArgumentException("Не указан канал уведомления");
+        }
+        return new Notification(notificationId, id, channel, sent);
+    }
 }

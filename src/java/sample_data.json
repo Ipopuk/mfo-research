@@ -1,0 +1,58 @@
+{
+  "applicant": {
+    "applicant_id": "person-1",
+    "full_name": "Учебный заявитель",
+    "contact": "applicant@example.invalid"
+  },
+  "application": {
+    "application_id": "request-1",
+    "applicant_id": "person-1",
+    "amount": 100000,
+    "term_months": 12,
+    "status": "registered",
+    "received_at": "2026-11-02"
+  },
+  "documents": [
+    {"document_id": "doc-1", "kind": "identity", "valid": true},
+    {"document_id": "doc-2", "kind": "income_statement", "valid": true}
+  ],
+  "application_documents": [
+    {"application_id": "request-1", "document_id": "doc-1", "received_at": "2026-11-02"},
+    {"application_id": "request-1", "document_id": "doc-2", "received_at": "2026-11-02"}
+  ],
+  "consents": [
+    {"consent_id": "consent-1", "application_id": "request-1", "kind": "credit_history", "status": "granted", "granted_at": "2026-11-02"}
+  ],
+  "check_results": [
+    {"check_id": "check-1", "application_id": "request-1", "kind": "identity", "source": "employee", "result": "passed", "checked_at": "2026-11-02"},
+    {"check_id": "check-2", "application_id": "request-1", "kind": "restrictions", "source": "employee", "result": "passed", "checked_at": "2026-11-02"}
+  ],
+  "incomes": [
+    {"income_id": "income-1", "applicant_id": "person-1", "monthly_amount": 70000, "verified": true},
+    {"income_id": "income-2", "applicant_id": "person-1", "monthly_amount": 10000, "verified": true}
+  ],
+  "obligations": [
+    {"obligation_id": "obligation-1", "applicant_id": "person-1", "monthly_payment": 12000, "active": true}
+  ],
+  "required_fields": [
+    ["applicant", "full_name"],
+    ["applicant", "contact"],
+    ["application", "amount"],
+    ["application", "term_months"]
+  ],
+  "required_document_kinds": ["identity", "income_statement"],
+  "proposed_monthly_payment": 18000,
+  "employee_decision": {
+    "decision_id": "decision-1",
+    "employee_id": "employee-1",
+    "outcome": "approved",
+    "reason": "Учебный пример: решение введено сотрудником",
+    "approved_amount": 100000,
+    "approved_term_months": 12
+  },
+  "notification": {
+    "notification_id": "notification-1",
+    "channel": "email",
+    "sent": true
+  }
+}

@@ -1,0 +1,208 @@
+@startuml
+title КТ3. Классы прототипа рассмотрения заявки
+hide circle
+hide empty members
+skinparam classAttributeIconSize 0
+skinparam defaultFontName Arial
+skinparam backgroundColor white
+skinparam classBackgroundColor #F1F5F9
+skinparam classBorderColor #475569
+skinparam ArrowColor #334155
+skinparam roundcorner 0
+skinparam shadowing false
+skinparam nodesep 45
+skinparam ranksep 46
+
+class Applicant <<record>> {
+  -id: String
+  -fullName: String
+  -contact: String
+  +id(): String
+  +fullName(): String
+  +contact(): String
+}
+
+class Application <<record>> {
+  -id: String
+  -applicantId: String
+  -amount: BigDecimal
+  -termMonths: Integer
+  -status: String
+  -receivedAt: String
+  {static} -FINAL_STATUSES: Set<String>
+  +id(): String
+  +applicantId(): String
+  +amount(): BigDecimal
+  +termMonths(): Integer
+  +status(): String
+  +receivedAt(): String
+  +recordDecision(decisionId: String, employeeId: String, outcome: String,\nreason: String, approvedAmount: BigDecimal, approvedTermMonths: Integer): DecisionEntry
+}
+
+class Document <<record>> {
+  -id: String
+  -kind: String
+  -valid: boolean
+  +id(): String
+  +kind(): String
+  +valid(): boolean
+}
+
+class ApplicationDocument <<record>> {
+  -applicationId: String
+  -documentId: String
+  -receivedAt: String
+  +applicationId(): String
+  +documentId(): String
+  +receivedAt(): String
+}
+
+class Consent <<record>> {
+  -id: String
+  -applicationId: String
+  -kind: String
+  -status: String
+  -grantedAt: String
+  +id(): String
+  +applicationId(): String
+  +kind(): String
+  +status(): String
+  +grantedAt(): String
+}
+
+class CheckResult <<record>> {
+  -id: String
+  -applicationId: String
+  -kind: String
+  -source: String
+  -result: String
+  -checkedAt: String
+  +id(): String
+  +applicationId(): String
+  +kind(): String
+  +source(): String
+  +result(): String
+  +checkedAt(): String
+}
+
+class Income <<record>> {
+  -id: String
+  -applicantId: String
+  -monthlyAmount: BigDecimal
+  -verified: boolean
+  +id(): String
+  +applicantId(): String
+  +monthlyAmount(): BigDecimal
+  +verified(): boolean
+}
+
+class Obligation <<record>> {
+  -id: String
+  -applicantId: String
+  -monthlyPayment: BigDecimal
+  -active: boolean
+  +id(): String
+  +applicantId(): String
+  +monthlyPayment(): BigDecimal
+  +active(): boolean
+}
+
+abstract class Decision {
+  -id: String
+  -applicationId: String
+  -employeeId: String
+  -reason: String
+  +id(): String
+  +applicationId(): String
+  +employeeId(): String
+  +reason(): String
+  {abstract} +outcome(): String
+  {abstract} +approvedAmount(): BigDecimal
+  {abstract} +approvedTermMonths(): Integer
+  +recordNotification(notificationId: String, channel: String, sent: boolean): Notification
+}
+
+class Approval {
+  -amount: BigDecimal
+  -termMonths: int
+  +outcome(): String
+  +approvedAmount(): BigDecimal
+  +approvedTermMonths(): Integer
+}
+
+class Refusal {
+  +outcome(): String
+  +approvedAmount(): BigDecimal
+  +approvedTermMonths(): Integer
+}
+
+class Notification <<record>> {
+  -id: String
+  -decisionId: String
+  -channel: String
+  -sent: boolean
+  +id(): String
+  +decisionId(): String
+  +channel(): String
+  +sent(): boolean
+}
+
+interface CompletenessRule <<interface>> {
+  +inspect(input: CompletenessCheck.Input): Optional<Missing>
+}
+
+class RequiredField <<record>> {
+  -entity: String
+  -field: String
+  +entity(): String
+  +field(): String
+  +inspect(input: CompletenessCheck.Input): Optional<Missing>
+}
+
+class RequiredDocument <<record>> {
+  -kind: String
+  +kind(): String
+  +inspect(input: CompletenessCheck.Input): Optional<Missing>
+}
+
+class CompletenessCheck {
+  +check(input: Input, rules: List<CompletenessRule>): Result
+}
+
+class PaymentLoadCalculator {
+  +calculate(applicant: Applicant, incomes: List<Income>,\nobligations: List<Obligation>, proposedMonthlyPayment: BigDecimal): Result
+}
+
+class ReviewWorkflow {
+  -completenessCheck: CompletenessCheck
+  -paymentCalculator: PaymentLoadCalculator
+  +review(input: Input): Result
+}
+
+Applicant "1" -- "0..*" Application
+Applicant "1" -- "0..*" Income
+Applicant "1" -- "0..*" Obligation
+Application "1" -- "0..*" ApplicationDocument
+ApplicationDocument "0..*" -- "1" Document
+Application "1" -- "0..*" Consent
+Application "1" -- "0..*" CheckResult
+Application "1" -- "0..1" Decision
+Decision "1" -- "0..*" Notification
+Decision <|-- Approval
+Decision <|-- Refusal
+CompletenessRule <|.. RequiredField
+CompletenessRule <|.. RequiredDocument
+CompletenessCheck ..> CompletenessRule : вызывает inspect
+RequiredDocument ..> ApplicationDocument : проверяет связи
+ReviewWorkflow "1" *-- "1" CompletenessCheck
+ReviewWorkflow "1" *-- "1" PaymentLoadCalculator
+ReviewWorkflow ..> Application : регистрирует решение
+ReviewWorkflow ..> Decision : сохраняет уведомление
+PaymentLoadCalculator ..> Income
+PaymentLoadCalculator ..> Obligation
+
+legend bottom
+  Предметные связи хранятся через идентификаторы JSON.
+  Служебные классы разбора JSON, запуска и вложенные типы результатов опущены.
+endlegend
+@enduml
