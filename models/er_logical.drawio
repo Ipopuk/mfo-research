@@ -29,38 +29,44 @@
         <mxCell id="Obligation" value="Обязательство&#10;PK obligation_id&#10;FK applicant_id&#10;Месячный платёж&#10;Активно" style="rounded=0;whiteSpace=wrap;html=0;align=left;verticalAlign=top;spacing=9;fontSize=15;strokeColor=#334155;fillColor=#eff6ff;" vertex="1" parent="1">
           <mxGeometry x="390" y="70" width="275" height="185" as="geometry" />
         </mxCell>
-        <mxCell id="Decision" value="Решение&#10;PK decision_id&#10;FK application_id&#10;Исход, причина&#10;Согласованные условия" style="rounded=0;whiteSpace=wrap;html=0;align=left;verticalAlign=top;spacing=9;fontSize=15;strokeColor=#334155;fillColor=#eff6ff;" vertex="1" parent="1">
+        <mxCell id="Decision" value="Решение&#10;PK decision_id&#10;FK application_id (уникальный)&#10;Исход, причина, условия, дата&#10;Код сотрудника (текст)" style="rounded=0;whiteSpace=wrap;html=0;align=left;verticalAlign=top;spacing=9;fontSize=15;strokeColor=#334155;fillColor=#eff6ff;" vertex="1" parent="1">
           <mxGeometry x="690" y="785" width="300" height="185" as="geometry" />
         </mxCell>
         <mxCell id="Notification" value="Уведомление&#10;PK notification_id&#10;FK decision_id&#10;Канал, дата&#10;Статус передачи" style="rounded=0;whiteSpace=wrap;html=0;align=left;verticalAlign=top;spacing=9;fontSize=15;strokeColor=#334155;fillColor=#eff6ff;" vertex="1" parent="1">
           <mxGeometry x="70" y="785" width="280" height="185" as="geometry" />
         </mxCell>
-        <mxCell id="Relation_1" value="1:N" style="entityRelationEdgeStyle;html=0;rounded=0;jettySize=auto;orthogonalLoop=1;startArrow=ERone;endArrow=ERmany;startFill=0;endFill=0;strokeColor=#475569;fontSize=13;" edge="1" parent="1" source="Applicant" target="Application">
+        <mxCell id="Relation_1" value="1:0..*" style="edgeStyle=none;html=0;rounded=0;startArrow=ERmandOne;endArrow=ERzeroToMany;startFill=0;endFill=0;strokeColor=#475569;fontSize=14;exitX=1.0000;exitY=0.4839;entryX=0.0000;entryY=0.5000;" edge="1" parent="1" source="Applicant" target="Application">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="Relation_2" value="1:N" style="entityRelationEdgeStyle;html=0;rounded=0;jettySize=auto;orthogonalLoop=1;startArrow=ERone;endArrow=ERmany;startFill=0;endFill=0;strokeColor=#475569;fontSize=13;" edge="1" parent="1" source="Applicant" target="Income">
+        <mxCell id="Relation_2" value="1:0..*" style="edgeStyle=none;html=0;rounded=0;startArrow=ERmandOne;endArrow=ERzeroToMany;startFill=0;endFill=0;strokeColor=#475569;fontSize=14;exitX=0.4444;exitY=0.0000;entryX=0.4630;entryY=1.0000;" edge="1" parent="1" source="Applicant" target="Income">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="Relation_3" value="1:N" style="entityRelationEdgeStyle;html=0;rounded=0;jettySize=auto;orthogonalLoop=1;startArrow=ERone;endArrow=ERmany;startFill=0;endFill=0;strokeColor=#475569;fontSize=13;" edge="1" parent="1" source="Applicant" target="Obligation">
+        <mxCell id="Relation_3" value="1:0..*" style="edgeStyle=none;html=0;rounded=0;startArrow=ERmandOne;endArrow=ERzeroToMany;startFill=0;endFill=0;strokeColor=#475569;fontSize=14;exitX=1.0000;exitY=0.1613;entryX=0.4909;entryY=1.0000;" edge="1" parent="1" source="Applicant" target="Obligation">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="Relation_4" value="1:N" style="entityRelationEdgeStyle;html=0;rounded=0;jettySize=auto;orthogonalLoop=1;startArrow=ERone;endArrow=ERmany;startFill=0;endFill=0;strokeColor=#475569;fontSize=13;" edge="1" parent="1" source="Application" target="ApplicationDocument">
+        <mxCell id="Relation_4" value="1:0..*" style="edgeStyle=none;html=0;rounded=0;startArrow=ERmandOne;endArrow=ERzeroToMany;startFill=0;endFill=0;strokeColor=#475569;fontSize=14;exitX=0.7667;exitY=0.0000;entryX=0.4000;entryY=1.0000;" edge="1" parent="1" source="Application" target="ApplicationDocument">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="Relation_5" value="1:N" style="entityRelationEdgeStyle;html=0;rounded=0;jettySize=auto;orthogonalLoop=1;startArrow=ERone;endArrow=ERmany;startFill=0;endFill=0;strokeColor=#475569;fontSize=13;" edge="1" parent="1" source="Document" target="ApplicationDocument">
+        <mxCell id="Relation_5" value="1:0..*" style="edgeStyle=none;html=0;rounded=0;startArrow=ERmandOne;endArrow=ERzeroToMany;startFill=0;endFill=0;strokeColor=#475569;fontSize=14;exitX=0.0000;exitY=0.5484;entryX=1.0000;entryY=0.5294;" edge="1" parent="1" source="Document" target="ApplicationDocument">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="Relation_6" value="1:N" style="entityRelationEdgeStyle;html=0;rounded=0;jettySize=auto;orthogonalLoop=1;startArrow=ERone;endArrow=ERmany;startFill=0;endFill=0;strokeColor=#475569;fontSize=13;" edge="1" parent="1" source="Application" target="Consent">
+        <mxCell id="Relation_6" value="1:0..*" style="edgeStyle=none;html=0;rounded=0;startArrow=ERmandOne;endArrow=ERzeroToMany;startFill=0;endFill=0;strokeColor=#475569;fontSize=14;exitX=1.0000;exitY=0.5000;entryX=0.0000;entryY=0.4839;" edge="1" parent="1" source="Application" target="Consent">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="Relation_7" value="1:N" style="entityRelationEdgeStyle;html=0;rounded=0;jettySize=auto;orthogonalLoop=1;startArrow=ERone;endArrow=ERmany;startFill=0;endFill=0;strokeColor=#475569;fontSize=13;" edge="1" parent="1" source="Application" target="CheckResult">
+        <mxCell id="Relation_7" value="1:0..*" style="edgeStyle=none;html=0;rounded=0;startArrow=ERmandOne;endArrow=ERzeroToMany;startFill=0;endFill=0;strokeColor=#475569;fontSize=14;exitX=0.8667;exitY=1.0000;entryX=0.0000;entryY=0.2973;" edge="1" parent="1" source="Application" target="CheckResult">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="Relation_8" value="1:0..1" style="entityRelationEdgeStyle;html=0;rounded=0;jettySize=auto;orthogonalLoop=1;startArrow=ERone;endArrow=ERone;startFill=0;endFill=0;strokeColor=#475569;fontSize=13;" edge="1" parent="1" source="Application" target="Decision">
+        <mxCell id="Relation_8" value="1:0..1" style="edgeStyle=none;html=0;rounded=0;startArrow=ERmandOne;endArrow=ERzeroToOne;startFill=0;endFill=0;strokeColor=#475569;fontSize=14;exitX=0.5000;exitY=1.0000;entryX=0.5000;entryY=0.0000;" edge="1" parent="1" source="Application" target="Decision">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="Relation_9" value="1:N" style="entityRelationEdgeStyle;html=0;rounded=0;jettySize=auto;orthogonalLoop=1;startArrow=ERone;endArrow=ERmany;startFill=0;endFill=0;strokeColor=#475569;fontSize=13;" edge="1" parent="1" source="Decision" target="Notification">
+        <mxCell id="Relation_9" value="1:0..*" style="edgeStyle=none;html=0;rounded=0;startArrow=ERmandOne;endArrow=ERzeroToMany;startFill=0;endFill=0;strokeColor=#475569;fontSize=14;exitX=0.0000;exitY=0.4865;entryX=1.0000;entryY=0.4865;" edge="1" parent="1" source="Decision" target="Notification">
           <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Legend" value="Две черты — ровно один; кружок и черта — 0..1; кружок и лапка — 0..*." style="text;align=left;fontSize=16;html=0;" vertex="1" parent="1">
+          <mxGeometry x="70" y="993" width="850" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="AssociationNote" value="Связь M:N между заявкой и документом разрешена сущностью «ДокументЗаявки»." style="text;align=left;fontSize=16;html=0;" vertex="1" parent="1">
+          <mxGeometry x="70" y="1018" width="850" height="24" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
