@@ -76,8 +76,16 @@ def model_structure() -> None:
         for cell in cells:
             if cell.get("edge") == "1":
                 assert cell.get("source") in ids and cell.get("target") in ids, (name, cell.get("id"))
+                if name == "er_logical.drawio":
+                    style = cell.get("style", "")
+                    assert "startArrow=ERmandOne;" in style
+                    end = "ERzeroToOne" if cell.get("value") == "1:0..1" else "ERzeroToMany"
+                    assert f"endArrow={end};" in style
             if name == "er_logical.drawio" and cell.get("vertex") == "1":
-                entity_names.add(cell.get("value", "").split("\n")[0])
+                value = cell.get("value", "")
+                title, _, attributes = value.partition("\n")
+                if attributes.startswith(("PK ", "PK,")):
+                    entity_names.add(title)
         if name.startswith("algo_"):
             assert any("Начало" in cell.get("value", "") for cell in cells)
             assert any("Конец" in cell.get("value", "") for cell in cells)
