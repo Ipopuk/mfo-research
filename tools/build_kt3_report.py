@@ -22,7 +22,7 @@ LINK = re.compile(r"(\[([^\]]+)\]\((https://[^)]+)\))")
 TABLE_WIDTHS = {
     1: [3, 4.25, 4.5, 5.25],
     2: [2.8, 4.4, 5.2, 4.6],
-    3: [0.8, 5.1, 6.55, 4.55],
+    3: [1.2, 5.5, 6.1, 4.2],
     4: [6.2, 2.4, 8.4],
 }
 SOURCES = [
@@ -49,18 +49,18 @@ def write_cell(cell, value: str, header: bool) -> None:
     item.paragraph_format.first_line_indent = Cm(0)
     item.paragraph_format.space_after = Pt(4)
     item.paragraph_format.space_before = Pt(3)
-    item.paragraph_format.line_spacing = 1.15
+    item.paragraph_format.line_spacing = 1.5
     start = 0
     for match in LINK.finditer(value):
         run = item.add_run(value[start:match.start()])
         run.font.name = "Times New Roman"
-        run.font.size = Pt(11)
-        add_link(item, match[2], match[3], 11)
+        run.font.size = Pt(14)
+        add_link(item, match[2], match[3], 14)
         start = match.end()
     run = item.add_run(value[start:])
     run.bold = header
     run.font.name = "Times New Roman"
-    run.font.size = Pt(11)
+    run.font.size = Pt(14)
 
 
 def add_table(document, rows: list[list[str]], number: int) -> None:
@@ -174,7 +174,10 @@ def build() -> None:
             index += 1
             add_code(document, code)
         else:
-            paragraph(document, value)
+            item = paragraph(document, value)
+            previous = item._p.getprevious()
+            if previous is not None and previous.tag == qn("w:tbl"):
+                item.paragraph_format.space_before = Pt(6)
 
     for element in list(body)[before_chapter:-1]:
         bibliography._p.addprevious(element)

@@ -25,6 +25,7 @@ cases = {
     'approved': base,
     'missing contact': changed((('applicant', 'contact'), '')),
     'blank name': changed((('applicant', 'full_name'), ' \t ')),
+    'Unicode blank name': changed((('applicant', 'full_name'), '\u00a0\u2007\u202f\u0085')),
     'zero amount': changed((('application', 'amount'), 0)),
     'invalid document': changed((('documents', 1, 'valid'), False)),
     'foreign application link': changed((('application_documents', 1, 'application_id'), 'another')),
@@ -34,8 +35,12 @@ cases = {
     'inactive obligation': changed((('obligations', 0, 'active'), False)),
     'retry notification': changed((('notification', 'sent'), False)),
     'refused': changed((('employee_decision', 'outcome'), 'refused')),
-    'rounding at binary midpoint': changed((('incomes', 0, 'monthly_amount'), 800),
+    'rounding non-tie': changed((('incomes', 0, 'monthly_amount'), 800),
         (('incomes', 1, 'verified'), False), (('obligations',), []), (('proposed_monthly_payment',), 81)),
+    'decimal tie rounds up': changed((('incomes', 0, 'monthly_amount'), 22508.60),
+        (('incomes', 1, 'monthly_amount'), 9411.40), (('obligations', 0, 'monthly_payment'), 1411.12),
+        (('proposed_monthly_payment',), 8659.64)),
+    'decimal tie rounds down': changed((('proposed_monthly_payment',), 17960)),
     'negative payment': changed((('proposed_monthly_payment',), -1)),
     'already final': changed((('application', 'status'), 'approved')),
     'wrong applicant': changed((('application', 'applicant_id'), 'other')),
@@ -45,6 +50,7 @@ cases = {
     'missing notification channel': changed((('notification', 'channel'), '')),
 }
 
+expected_shares = {'rounding non-tie': 10.1, 'decimal tie rounds up': 31.6, 'decimal tie rounds down': 37.4}
 java_command = ['java', '-Dfile.encoding=UTF-8', '-jar',
                 str(ROOT / 'src/java/target/mfo-kt3.jar'), '--data']
 
@@ -59,9 +65,11 @@ with TemporaryDirectory() as directory:
         if not python.returncode:
             result = json.loads(java.stdout)
             assert json.loads(python.stdout) == result, (name, python.stdout, java.stdout)
-            if name == 'blank name':
+            if name in {'blank name', 'Unicode blank name'}:
                 assert result['completeness']['missing_fields'] == ['applicant.full_name']
                 assert result['next_step'] == 'request_information'
+            if name in expected_shares:
+                assert result['payment_load']['payment_share_percent'] == expected_shares[name]
         else:
             assert java.stderr.strip() in python.stderr.splitlines()[-1], (name, python.stderr, java.stderr)
         print(f'{name}: OK')

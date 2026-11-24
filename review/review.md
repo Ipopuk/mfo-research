@@ -56,8 +56,10 @@
 
 | № | Что изменено | Результат повторной проверки | Коммит |
 |---|---|---|---|
-| 1 | В Java обязательный текст проверяется через `isBlank()`. В Python пробельный текст также считается отсутствующим. | При ФИО из пробелов и табуляции обе версии возвращают `missing_fields: ["applicant.full_name"]` и `next_step: "request_information"`. | [Java `0f57456`](https://github.com/Ipopuk/mfo-research/commit/0f57456), [Python `a4fba01`](https://github.com/Ipopuk/mfo-research/commit/a4fba01) |
+| 1 | Первичное исправление на Java использовало `isBlank()`. При итоговой проверке правило расширено на неразрывные пробелы и согласовано с Python. | При ФИО из обычных или неразрывных пробелов обе версии возвращают `missing_fields: ["applicant.full_name"]` и `next_step: "request_information"`. | [Java `0f57456`](https://github.com/Ipopuk/mfo-research/commit/0f57456), [Python `a4fba01`](https://github.com/Ipopuk/mfo-research/commit/a4fba01), [проверка Юникода `20d1fae`](https://github.com/Ipopuk/mfo-research/commit/20d1fae) |
 | 2 | Java проверяет суммы подтверждённых доходов и активных обязательств перед сложением. | При удалении `monthly_amount` или `monthly_payment` CLI завершает работу с кодом 1 и печатает имя поля и идентификатор записи одной строкой. | [`12d09c6`](https://github.com/Ipopuk/mfo-research/commit/12d09c6) |
 | 3 | В сигнатурах UML указаны имена классов-владельцев вложенных типов. PNG пересобран из PlantUML. | На рисунке и в исходнике различимы пары `CompletenessCheck.Input` / `.Result` и `ReviewWorkflow.Input` / `.Result`. | [`78e983b`](https://github.com/Ipopuk/mfo-research/commit/78e983b) |
 
-После исправлений Java-прототип собран Maven с целевой версией Java 21. Скрипт `tools/check_kt3_parity.py` проверяет 19 общих сценариев Python и Java и две диагностики Java для отсутствующих сумм.
+При итоговой проверке также согласовано округление доли платежей в Python и Java. В обеих версиях денежные суммы складываются точно, процент округляется после расчёта. В пограничном примере с точной долей 31,55 % обе версии возвращают 31,6 %. [Python `b1a5586`](https://github.com/Ipopuk/mfo-research/commit/b1a5586), [Java `9b333c6`](https://github.com/Ipopuk/mfo-research/commit/9b333c6).
+
+После исправлений Java-прототип собран Maven с целевой версией Java 21. Скрипт `tools/check_kt3_parity.py` проверяет 22 общих сценария Python и Java и две диагностики Java для отсутствующих сумм.
