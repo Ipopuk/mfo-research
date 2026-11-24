@@ -67,9 +67,8 @@ def replace_front_images(document: Document) -> None:
     front_line(document, "РТУ МИРЭА", center=True, bold=True, size=14)
     front_line(document, "Институт информационных технологий (ИИТ)", center=True, before=32)
     front_line(document, "Кафедра инструментального и прикладного программного обеспечения (ИиППО)", center=True)
-    front_line(document, "ОТЧЁТ ПО ПРОИЗВОДСТВЕННОЙ ПРАКТИКЕ", center=True,
+    front_line(document, "ОТЧЁТ ПО УЧЕБНОЙ ПРАКТИКЕ", center=True,
                bold=True, size=16, before=78, after=8)
-    front_line(document, "Учебная практика", center=True, bold=True, size=14)
     front_line(document, f"Тема практики: «{TOPIC}»", center=True,
                bold=True, size=14, before=32, after=24)
     front_line(document, "Выполнила: студентка 3 курса группы ИКБО-10-24", size=14, before=30)
@@ -80,9 +79,8 @@ def replace_front_images(document: Document) -> None:
     document.add_page_break()
 
     front_line(document, "РТУ МИРЭА · Институт информационных технологий", center=True, size=12)
-    front_line(document, "ИНДИВИДУАЛЬНОЕ ЗАДАНИЕ НА ПРОИЗВОДСТВЕННУЮ ПРАКТИКУ", center=True,
-               bold=True, size=15, before=25)
-    front_line(document, "Учебная практика", center=True, bold=True, size=13, after=16)
+    front_line(document, "ИНДИВИДУАЛЬНОЕ ЗАДАНИЕ НА УЧЕБНУЮ ПРАКТИКУ", center=True,
+               bold=True, size=15, before=25, after=16)
     front_line(document, f"Тема практики: «{TOPIC}»", bold=True, size=13, after=12)
     front_line(document, "Студентке 3 курса группы ИКБО-10-24 Павловой Анне Алексеевне", size=12)
     front_line(document, "Место практики: ООО «Бюджетные и Финансовые Технологии».", size=12)

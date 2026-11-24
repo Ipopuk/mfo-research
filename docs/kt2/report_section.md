@@ -78,28 +78,26 @@ for kind in required_kinds:
         missing_documents.append(kind)
 ```
 
-Алгоритм предварительной платёжной нагрузки (рисунок 2.4) последовательно обходит n записей доходов и m обязательств. Учитываются только подтверждённые доходы и активные обязательства нужного заявителя. Отрицательное значение предложенного платежа вызывает ошибку. При отсутствии положительного подтверждённого дохода возвращается статус insufficient_income_data без вычисления доли. В остальных случаях доля равна сумме действующих и предложенного месячных платежей, делённой на подтверждённый месячный доход и умноженной на 100 %. Время O(n + m), дополнительная память O(1). Эта операция не требует вложенного перебора.
+Алгоритм предварительной платёжной нагрузки (рисунок 2.4) последовательно обходит n записей доходов и m обязательств. Учитываются только подтверждённые доходы и активные обязательства нужного заявителя. Отрицательное значение предложенного платежа вызывает ошибку. При отсутствии положительного подтверждённого дохода возвращается статус insufficient_income_data без вычисления доли. В остальных случаях сумма действующих и предложенного месячных платежей умножается на 100 и делится на подтверждённый месячный доход. Суммы с копейками обрабатываются как точные дроби. Результат округляется до десятых процента. Ровно посередине между двумя значениями выбирается значение с чётной цифрой в разряде десятых. Для денежных величин фиксированного формата время O(n + m), дополнительная память O(1).
 
 ![Рисунок 2.4 — Блок-схема предварительного расчёта платёжной нагрузки](models/algo_2.png)
 
-Фрагмент 2.2 — Обход записей и проверка дохода в calculate_payment_load()
+Фрагмент 2.2 — Обход записей и округление доли в calculate_payment_load()
 
 ```python
-monthly_income = 0
+monthly_income = Fraction(0)
 for income in incomes:
     if income["applicant_id"] == applicant_id and income["verified"]:
-        monthly_income += income["monthly_amount"]
-existing_payments = 0
+        monthly_income += Fraction(str(income["monthly_amount"]))
+existing_payments = Fraction(0)
 for obligation in obligations:
     if obligation["applicant_id"] == applicant_id and obligation["active"]:
-        existing_payments += obligation["monthly_payment"]
-if monthly_income <= 0:
-    return {
-        "status": "insufficient_income_data",
-        "monthly_income": monthly_income,
-        "existing_payments": existing_payments,
-        "payment_share_percent": None,
-    }
+        existing_payments += Fraction(str(obligation["monthly_payment"]))
+
+share = None
+if monthly_income > 0:
+    total_payment = existing_payments + Fraction(str(proposed_monthly_payment))
+    share = float(round(total_payment * 100 / monthly_income, 1))
 ```
 
 Оценки относятся к одному вызову функции и не включают чтение JSON-файла, подготовку словаря документов или вывод результата. В программе run_case() документы предварительно индексируются по document_id за O(k) времени и O(k) памяти; ожидаемый доступ к отдельной записи — O(1). Если считать полный запуск вместе с подготовкой индекса, его стоимость добавляется к стоимости check_request().
