@@ -33,11 +33,11 @@ NODES = [
     ("start", "startEvent", "Поступило обращение", "specialist", 340, 220),
     ("register", "task", "Зарегистрировать заявку", "specialist", 440, 210),
     ("check", "task", "Проверить комплектность заявки", "specialist", 620, 210),
-    ("complete", "exclusiveGateway", "Данные полны?", "specialist", 800, 210),
+    ("complete", "exclusiveGateway", "Данные полны?", "specialist", 830, 210),
     ("request_info", "task", "Запросить недостающие сведения", "specialist", 670, 340),
-    ("withdrawn", "exclusiveGateway", "Отзыв или срок истёк?", "specialist", 850, 345),
-    ("close", "task", "Закрыть заявку с основанием", "specialist", 970, 340),
-    ("end_withdrawn", "endEvent", "Заявка закрыта", "specialist", 1150, 350),
+    ("withdrawn", "exclusiveGateway", "Отзыв или срок истёк?", "specialist", 883, 345),
+    ("close", "task", "Закрыть заявку с основанием", "specialist", 1000, 340),
+    ("end_withdrawn", "endEvent", "Заявка закрыта", "specialist", 1180, 350),
     ("identity", "task", "Проверить личность и согласия", "specialist", 950, 210),
     ("restrictions", "task", "Проверить ограничения", "specialist", 1130, 210),
     ("restricted", "exclusiveGateway", "Есть запрет?", "specialist", 1310, 210),
@@ -102,6 +102,41 @@ MESSAGES = [
     ("notify", "Applicant", "Решение"),
 ]
 
+DATA_POSITIONS = [(437, 147), (630, 125), (750, 125), (1000, 125),
+                  (1170, 125), (2110, 125), (2600, 610), (2800, 345)]
+FLOW_ROUTES = {
+    ("complete", "request_info"): [(857, 265), (857, 304), (749, 304), (749, 340)],
+    ("withdrawn", "check"): [(910, 400), (910, 428), (642, 428), (642, 306), (699, 306), (699, 274)],
+    ("notify", "record_notice"): [(2948, 242), (2962, 242), (2962, 414), (2679, 414), (2679, 404)],
+    ("record", "notify"): [(2699, 520), (2699, 470), (2976, 470), (2976, 224), (2948, 224)],
+    ("delivered", "notify"): [(2447, 400), (2447, 429), (2774, 429), (2774, 242), (2790, 242)],
+}
+FLOW_LABELS = {
+    ("complete", "identity"): (916, 216, 42, 20),
+    ("complete", "request_info"): (777, 283, 42, 20),
+    ("withdrawn", "close"): (946, 350, 42, 20),
+    ("withdrawn", "check"): (690, 406, 200, 20),
+    ("delivered", "end_notified"): (2334, 349, 42, 20),
+}
+MESSAGE_ROUTES = {
+    ("Applicant", "register"): [(556, 100), (556, 210)],
+    ("request_info", "Applicant"): [(670, 372), (604, 372), (604, 100)],
+    ("Applicant", "check"): [(759, 100), (759, 119), (740, 119), (740, 210)],
+    ("bki", "BKI"): [(1640, 274), (1640, 710)],
+    ("BKI", "bki_answer"): [(1905, 710), (1905, 252), (1820, 252)],
+    ("notify", "Service"): [(2930, 274), (2930, 815)],
+    ("Service", "record_notice"): [(2615, 815), (2615, 404)],
+}
+MESSAGE_LABELS = {
+    ("Applicant", "register"): (492, 76, 128, 20),
+    ("request_info", "Applicant"): (537, 53, 134, 20),
+    ("Applicant", "check"): (665, 76, 188, 20),
+    ("bki", "BKI"): (1644, 512, 66, 20),
+    ("BKI", "bki_answer"): (1908, 510, 64, 20),
+    ("notify", "Service"): (2830, 663, 97, 20),
+    ("Service", "record_notice"): (2470, 698, 142, 20),
+    ("notify", "Applicant"): (2875, 135, 75, 20),
+}
 
 def node_size(kind: str) -> tuple[int, int]:
     if kind in {"startEvent", "endEvent"}:
@@ -109,6 +144,62 @@ def node_size(kind: str) -> tuple[int, int]:
     if kind == "exclusiveGateway":
         return (55, 55)
     return (158, 64)
+
+
+def flow_points(source, target, boxes):
+    route = FLOW_ROUTES.get((source, target))
+    if route:
+        return route
+    sx, sy, sw, sh = boxes[source]
+    tx, ty, tw, th = boxes[target]
+    a = (sx + sw // 2, sy + sh // 2)
+    b = (tx + tw // 2, ty + th // 2)
+    bypass = {("consent", "payment"): 190, ("refusal", "merge"): 435,
+              ("wait_bki", "bki"): 415}
+    via = bypass.get((source, target))
+    if via:
+        a = (a[0], sy + sh if via > a[1] else sy)
+        b = (b[0], ty + th if via > b[1] else ty)
+        return [a, (a[0], via), (b[0], via), b]
+    if abs(b[1] - a[1]) < 75:
+        return [(sx + sw, a[1]), (tx, b[1])] if tx > sx else [(sx, a[1]), (tx + tw, b[1])]
+    if sx == tx or source in {"complete", "restricted", "bki_answer"}:
+        via = (sy + sh + ty) // 2
+        return [(a[0], sy + sh), (a[0], via), (b[0], via), (b[0], ty)]
+    via = (sx + sw + tx) // 2
+    return [(sx + sw, a[1]), (via, a[1]), (via, b[1]), (tx, b[1])]
+
+
+def message_points(source, target, boxes):
+    route = MESSAGE_ROUTES.get((source, target))
+    if route:
+        return route
+    pool_y = {"Applicant": 100, "BKI": 710, "Service": 815}
+    if source in pool_y:
+        x, y, w, h = boxes[target]
+        pool = (x + w // 2, pool_y[source])
+        return [pool, (pool[0], y + h)]
+    x, y, w, h = boxes[source]
+    pool = (x + w // 2, pool_y[target])
+    return [(pool[0], y if target == "Applicant" else y + h), pool]
+
+
+def flow_label(source, target, points):
+    position = FLOW_LABELS.get((source, target))
+    if position:
+        return position
+    a, b = points[:2]
+    if abs(a[1] - b[1]) <= abs(a[0] - b[0]):
+        return ((a[0] + b[0]) // 2 - 21, min(a[1], b[1]) - 22, 42, 20)
+    return (a[0] + 3, (a[1] + b[1]) // 2 - 10, 42, 20)
+
+
+def gateway_label(code, box):
+    x, y, w, h = box
+    label_y = y + h + 5 if y < 300 else y - 41
+    if code in {"complete", "restricted", "bki_answer", "merge"}:
+        label_y = 173 if code == "complete" else 151
+    return (x - 45, label_y, w + 90, 38)
 
 
 def build_source(path: Path) -> None:
@@ -171,19 +262,26 @@ def build_source(path: Path) -> None:
     })
     bounds = {
         "MKK": (250, 110, 2740, 570),
-        "Applicant": (250, 10, 2740, 80),
+        "Applicant": (250, 30, 2740, 70),
         "BKI": (250, 710, 2740, 75),
         "Service": (250, 815, 2740, 75),
         "specialist": (250, 110, 2740, 335),
         "authorized": (250, 445, 2740, 235),
     }
 
-    def shape(element_id: str, box: tuple[int, int, int, int], horizontal: bool = False) -> None:
+    def label_bounds(node, box):
+        label = ET.SubElement(node, q(BPMNDI, "BPMNLabel"))
+        ET.SubElement(label, q(DC, "Bounds"), dict(zip(("x", "y", "width", "height"), map(str, box))))
+
+    def shape(element_id: str, box: tuple[int, int, int, int], horizontal: bool = False,
+              label_box=None) -> None:
         attrs = {"id": f"Shape_{element_id}", "bpmnElement": element_id}
         if horizontal:
             attrs["isHorizontal"] = "true"
         node = ET.SubElement(plane, q(BPMNDI, "BPMNShape"), attrs)
         ET.SubElement(node, q(DC, "Bounds"), dict(zip(("x", "y", "width", "height"), map(str, box))))
+        if label_box:
+            label_bounds(node, label_box)
 
     for code, _, _ in participants:
         shape(f"Participant_{code}", bounds[code], True)
@@ -193,34 +291,30 @@ def build_source(path: Path) -> None:
     for node_id, kind, _, _, x, y in NODES:
         width, height = node_size(kind)
         positions[node_id] = (x, y, width, height)
-        shape(f"Node_{node_id}", positions[node_id])
-    data_positions = [(600, 125), (730, 125), (860, 125), (1000, 125),
-                      (1170, 125), (2110, 125), (2600, 610), (2800, 345)]
-    for (code, _, _), (x, y) in zip(DATA, data_positions):
+        label_box = gateway_label(node_id, positions[node_id]) if kind == "exclusiveGateway" else None
+        shape(f"Node_{node_id}", positions[node_id], label_box=label_box)
+    for (code, _, _), (x, y) in zip(DATA, DATA_POSITIONS):
         shape(f"DataRef_{code}", (x, y, 100, 50))
 
-    def edge(element_id: str, source: tuple[int, int], target: tuple[int, int]) -> None:
+    def edge(element_id, points, label_box=None):
         node = ET.SubElement(plane, q(BPMNDI, "BPMNEdge"), {
             "id": f"Edge_{element_id}", "bpmnElement": element_id,
         })
-        for x, y in (source, target):
+        for x, y in points:
             ET.SubElement(node, q(DI, "waypoint"), {"x": str(x), "y": str(y)})
+        if label_box:
+            label_bounds(node, label_box)
 
-    for i, (source, target, _) in enumerate(FLOWS, 1):
-        sx, sy, sw, sh = positions[source]
-        tx, ty, tw, th = positions[target]
-        edge(f"Flow_{i}", (sx + sw // 2, sy + sh // 2), (tx + tw // 2, ty + th // 2))
-    for (code, _, task), (x, y) in zip(DATA, data_positions):
+    for i, (source, target, label) in enumerate(FLOWS, 1):
+        points = flow_points(source, target, positions)
+        edge(f"Flow_{i}", points, flow_label(source, target, points) if label else None)
+    for (code, _, task), (x, y) in zip(DATA, DATA_POSITIONS):
         tx, ty, tw, th = positions[task]
-        edge(f"Association_{code}", (x + 50, y + 25), (tx + tw // 2, ty + th // 2))
-    external_y = {"Applicant": 50, "BKI": 747, "Service": 852}
+        src = (x + 50, y + 50 if y < ty else y)
+        dst = (tx + tw // 2, ty if y < ty else ty + th)
+        edge(f"Association_{code}", [src, dst])
     for i, (source, target, _) in enumerate(MESSAGES, 1):
-        if source in external_y:
-            tx, ty, tw, th = positions[target]
-            edge(f"MessageFlow_{i}", (tx + tw // 2, external_y[source]), (tx + tw // 2, ty + th // 2))
-        else:
-            sx, sy, sw, sh = positions[source]
-            edge(f"MessageFlow_{i}", (sx + sw // 2, sy + sh // 2), (sx + sw // 2, external_y[target]))
+        edge(f"MessageFlow_{i}", message_points(source, target, positions), MESSAGE_LABELS.get((source, target)))
 
     ET.indent(definitions, space="  ")
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -296,59 +390,35 @@ def build_png(path: Path) -> None:
     draw.text((260, 420), "Кредитный специалист", font=small, fill=palette["pool"])
     draw.text((260, 655), "Уполномоченный сотрудник", font=small, fill=palette["pool"])
 
-    bypass = {("consent", "payment"): 190, ("refusal", "merge"): 425,
-              ("withdrawn", "check"): 428, ("wait_bki", "bki"): 425,
-              ("delivered", "notify"): 430}
+    labels = []
     for source, target, label in FLOWS:
-        sx, sy, sw, sh = boxes[source]
-        tx, ty, tw, th = boxes[target]
-        a = (sx + sw // 2, sy + sh // 2)
-        b = (tx + tw // 2, ty + th // 2)
-        if (source, target) in bypass:
-            via = bypass[(source, target)]
-            a = (a[0], sy + sh if via > a[1] else sy)
-            b = (b[0], ty + th if via > b[1] else ty)
-            points = [a, (a[0], via), (b[0], via), b]
-        elif tx > sx and abs(b[1] - a[1]) < 75:
-            points = [(sx + sw, a[1]), (tx, b[1])]
-        elif target == "record_notice":
-            points = [(sx + sw // 2, sy + sh), (sx + sw // 2, 410),
-                      (tx + tw // 2, 410), (tx + tw // 2, ty + sh)]
-        elif target == "notify":
-            points = [(sx + sw // 2, sy), (sx + sw // 2, 470),
-                      (tx + tw // 2, 470), (tx + tw // 2, ty + th)]
-        else:
-            points = [a, (b[0], a[1]), b]
+        points = flow_points(source, target, boxes)
         arrow(points)
         if label:
-            middle = points[len(points) // 2]
-            width = draw.textbbox((0, 0), label, font=small)[2]
-            draw.rectangle((middle[0] - width / 2 - 3, middle[1] - 17,
-                            middle[0] + width / 2 + 3, middle[1] + 1), fill="white")
-            draw.text((middle[0] - width / 2, middle[1] - 17), label, font=small,
-                      fill=palette["line"])
+            labels.append((label, flow_label(source, target, points), palette["line"]))
 
     for source, target, label in MESSAGES:
-        if source in {"Applicant", "BKI", "Service"}:
-            x, y, w, h = boxes[target]
-            a = (x + w // 2, {"Applicant": 100, "BKI": 710, "Service": 815}[source])
-            b = (x + w // 2, y + h // 2)
+        points = message_points(source, target, boxes)
+        arrow(points, palette["message"], True)
+        label_box = MESSAGE_LABELS.get((source, target))
+        if label_box:
+            labels.append((label, label_box, palette["message"]))
         else:
-            x, y, w, h = boxes[source]
-            a = (x + w // 2, y + h // 2)
-            b = (x + w // 2, {"Applicant": 100, "BKI": 710, "Service": 815}[target])
-        arrow([a, b], palette["message"], True)
-        draw.text((a[0] + 4, (a[1] + b[1]) / 2), label, font=small, fill=palette["message"])
+            a, b = points
+            draw.text((a[0] + 4, (a[1] + b[1]) / 2), label, font=small, fill=palette["message"])
 
-    data_positions = [(600, 125), (730, 125), (860, 125), (1000, 125),
-                      (1170, 125), (2110, 125), (2600, 610), (2800, 345)]
-    for (code, label, task), (x, y) in zip(DATA, data_positions):
+    for (code, label, task), (x, y) in zip(DATA, DATA_POSITIONS):
         tx, ty, tw, th = boxes[task]
-        segment((x + 50, y + 45), (tx + tw // 2, ty + th // 2), "#a16207", True)
+        src = (x + 50, y + 50 if y < ty else y)
+        dst = (tx + tw // 2, ty if y < ty else ty + th)
+        segment(src, dst, "#a16207", True)
         draw.polygon(((x, y), (x + 90, y), (x + 100, y + 10),
                       (x + 100, y + 50), (x, y + 50)),
                      fill=palette["data"], outline="#a16207")
         text_center(label, (x + 3, y + 3, 94, 44), small)
+
+    for label, box, color in labels:
+        text_center(label, box, small, color)
 
     for code, kind, label, _, x, y in NODES:
         w, h = node_size(kind)
@@ -361,8 +431,7 @@ def build_png(path: Path) -> None:
             draw.polygon(((x + w // 2, y), (x + w, y + h // 2),
                           (x + w // 2, y + h), (x, y + h // 2)),
                          fill="white", outline=palette["line"])
-            label_y = y + h + 5 if y < 300 else y - 41
-            text_center(label, (x - 45, label_y, w + 90, 38), small)
+            text_center(label, gateway_label(code, boxes[code]), small)
         else:
             draw.ellipse((x, y, x + w, y + h), fill="white",
                          outline=palette["line"], width=3 if kind == "endEvent" else 2)
