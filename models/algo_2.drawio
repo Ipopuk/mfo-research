@@ -98,7 +98,7 @@
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
               <mxPoint x="1090" y="392" />
-              <mxPoint x="1090" y="692" />
+              <mxPoint x="1090" y="665" />
             </Array>
           </mxGeometry>
         </mxCell>
@@ -110,7 +110,10 @@
         <mxCell id="flow_10" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=0;endArrow=block;endFill=1;strokeColor=#475569;fontSize=15;" edge="1" parent="1" source="add_income" target="income_loop">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
-              <mxPoint x="240" y="392" />
+              <mxPoint x="45" y="535" />
+              <mxPoint x="45" y="465" />
+              <mxPoint x="475" y="465" />
+              <mxPoint x="475" y="392" />
             </Array>
           </mxGeometry>
         </mxCell>
@@ -118,7 +121,7 @@
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
               <mxPoint x="1030" y="532" />
-              <mxPoint x="1030" y="392" />
+              <mxPoint x="1030" y="415" />
             </Array>
           </mxGeometry>
         </mxCell>
