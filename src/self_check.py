@@ -28,6 +28,10 @@ def main() -> int:
         data["required_fields"], data["required_document_kinds"],
     )
     assert missing["missing_documents"] == ["income_statement"]
+    blank_name = dict(data, applicant=dict(data["applicant"], full_name=" \t "))
+    incomplete = run_case(blank_name)
+    assert incomplete["completeness"]["missing_fields"] == ["applicant.full_name"]
+    assert incomplete["next_step"] == "request_information"
     no_income = calculate_payment_load("person-1", [], data["obligations"], 18000)
     assert no_income["status"] == "insufficient_income_data"
     try:

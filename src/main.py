@@ -28,7 +28,8 @@ def check_request(
     missing_fields = []
     for entity_name, field_name in required_fields:
         value = entities[entity_name].get(field_name)
-        if value is None or value == "" or (isinstance(value, (int, float)) and value <= 0):
+        blank_text = isinstance(value, str) and not value.strip()
+        if value is None or blank_text or (isinstance(value, (int, float)) and value <= 0):
             missing_fields.append(f"{entity_name}.{field_name}")
 
     missing_documents = []
