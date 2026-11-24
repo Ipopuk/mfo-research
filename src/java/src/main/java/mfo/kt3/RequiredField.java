@@ -6,7 +6,7 @@ public record RequiredField(String entity, String field) implements Completeness
     @Override
     public Optional<Missing> inspect(CompletenessCheck.Input input) {
         Object value = input.fields().get(entity).get(field);
-        if (value == null || "".equals(value) || Boolean.FALSE.equals(value)
+        if (value == null || (value instanceof String text && text.isBlank()) || Boolean.FALSE.equals(value)
             || (value instanceof Number number && number.doubleValue() <= 0)) {
             return Optional.of(new Missing(Category.FIELD, entity + "." + field));
         }
