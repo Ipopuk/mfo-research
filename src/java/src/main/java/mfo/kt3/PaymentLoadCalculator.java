@@ -21,14 +21,24 @@ public final class PaymentLoadCalculator {
         BigDecimal monthlyIncome = BigDecimal.ZERO;
         for (Income income : incomes) {
             if (Objects.equals(income.applicantId(), applicant.id()) && income.verified()) {
-                monthlyIncome = monthlyIncome.add(income.monthlyAmount());
+                BigDecimal amount = income.monthlyAmount();
+                if (amount == null) {
+                    throw new IllegalArgumentException("Поле monthly_amount записи дохода "
+                        + income.id() + " должно быть числом");
+                }
+                monthlyIncome = monthlyIncome.add(amount);
             }
         }
 
         BigDecimal existingPayments = BigDecimal.ZERO;
         for (Obligation obligation : obligations) {
             if (Objects.equals(obligation.applicantId(), applicant.id()) && obligation.active()) {
-                existingPayments = existingPayments.add(obligation.monthlyPayment());
+                BigDecimal payment = obligation.monthlyPayment();
+                if (payment == null) {
+                    throw new IllegalArgumentException("Поле monthly_payment записи обязательства "
+                        + obligation.id() + " должно быть числом");
+                }
+                existingPayments = existingPayments.add(payment);
             }
         }
 
