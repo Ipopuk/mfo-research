@@ -1,7 +1,6 @@
 package mfo.kt3;
 
 import java.math.BigDecimal;
-import java.math.MathContext;
 import java.math.RoundingMode;
 import java.util.List;
 import java.util.Objects;
@@ -46,9 +45,7 @@ public final class PaymentLoadCalculator {
             return new Result("insufficient_income_data", monthlyIncome, existingPayments, null);
         }
         BigDecimal share = existingPayments.add(proposedMonthlyPayment).movePointRight(2)
-            .divide(monthlyIncome, MathContext.DECIMAL128);
-        // Python rounds the binary floating-point quotient to one decimal place.
-        BigDecimal rounded = new BigDecimal(share.doubleValue()).setScale(1, RoundingMode.HALF_EVEN);
-        return new Result("calculated", monthlyIncome, existingPayments, rounded);
+            .divide(monthlyIncome, 1, RoundingMode.HALF_EVEN);
+        return new Result("calculated", monthlyIncome, existingPayments, share);
     }
 }
