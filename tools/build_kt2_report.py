@@ -160,6 +160,7 @@ def bibliography_item(document: Document, value: str):
 def caption(document: Document, value: str):
     item = document.add_paragraph()
     item.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    item.paragraph_format.first_line_indent = Cm(0)
     item.paragraph_format.space_before = Pt(6)
     item.paragraph_format.space_after = Pt(9)
     item.paragraph_format.keep_with_next = False
@@ -171,11 +172,17 @@ def caption(document: Document, value: str):
 
 def add_picture(document: Document, path: Path, label: str):
     available = document.sections[0].page_width - document.sections[0].left_margin - document.sections[0].right_margin
-    item = document.add_paragraph()
-    item.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    item.paragraph_format.space_after = Pt(0)
-    item.add_run().add_picture(str(path), width=available)
-    caption(document, label)
+
+    def image_block(image, title: str):
+        item = document.add_paragraph()
+        item.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        item.paragraph_format.first_line_indent = Cm(0)
+        item.paragraph_format.keep_with_next = True
+        item.paragraph_format.space_after = Pt(0)
+        item.add_run().add_picture(image, width=available)
+        caption(document, title)
+
+    image_block(str(path), label)
 
     # Keep the complete overview and show overlapping details at print size.
     with Image.open(path) as image:
@@ -195,10 +202,7 @@ def add_picture(document: Document, path: Path, label: str):
             stream = BytesIO()
             part.save(stream, format="PNG")
             stream.seek(0)
-            detail = document.add_paragraph()
-            detail.alignment = WD_ALIGN_PARAGRAPH.CENTER
-            detail.add_run().add_picture(stream, width=available)
-            caption(document, f"{label} (фрагмент {index + 1})")
+            image_block(stream, f"{label} (фрагмент {index + 1})")
 
 
 def add_table(document: Document, rows: list[list[str]]):
