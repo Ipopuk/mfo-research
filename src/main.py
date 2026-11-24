@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import argparse
 import json
+from fractions import Fraction
 from pathlib import Path
 
 
@@ -56,36 +57,32 @@ def calculate_payment_load(
     applicant_id: str,
     incomes: list,
     obligations: list,
-    proposed_monthly_payment: int,
+    proposed_monthly_payment: int | float,
 ) -> dict:
     """Estimate a payment share in O(n + m) time and O(1) extra memory."""
     if proposed_monthly_payment < 0:
         raise ValueError("Предложенный платёж не может быть отрицательным")
 
-    monthly_income = 0
+    monthly_income = Fraction(0)
     for income in incomes:
         if income["applicant_id"] == applicant_id and income["verified"]:
-            monthly_income += income["monthly_amount"]
+            monthly_income += Fraction(str(income["monthly_amount"]))
 
-    existing_payments = 0
+    existing_payments = Fraction(0)
     for obligation in obligations:
         if obligation["applicant_id"] == applicant_id and obligation["active"]:
-            existing_payments += obligation["monthly_payment"]
+            existing_payments += Fraction(str(obligation["monthly_payment"]))
 
-    if monthly_income <= 0:
-        return {
-            "status": "insufficient_income_data",
-            "monthly_income": monthly_income,
-            "existing_payments": existing_payments,
-            "payment_share_percent": None,
-        }
+    share = None
+    if monthly_income > 0:
+        # Keep decimal amounts exact through rounding, then emit a JSON number.
+        total_payment = existing_payments + Fraction(str(proposed_monthly_payment))
+        share = float(round(total_payment * 100 / monthly_income, 1))
     return {
-        "status": "calculated",
-        "monthly_income": monthly_income,
-        "existing_payments": existing_payments,
-        "payment_share_percent": round(
-            (existing_payments + proposed_monthly_payment) * 100 / monthly_income, 1
-        ),
+        "status": "calculated" if share is not None else "insufficient_income_data",
+        "monthly_income": int(monthly_income) if monthly_income.denominator == 1 else float(monthly_income),
+        "existing_payments": int(existing_payments) if existing_payments.denominator == 1 else float(existing_payments),
+        "payment_share_percent": share,
     }
 
 

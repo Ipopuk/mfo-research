@@ -34,6 +34,14 @@ def main() -> int:
     assert incomplete["next_step"] == "request_information"
     no_income = calculate_payment_load("person-1", [], data["obligations"], 18000)
     assert no_income["status"] == "insufficient_income_data"
+    incomes = [
+        dict(data["incomes"][0], monthly_amount=22508.60),
+        dict(data["incomes"][1], monthly_amount=9411.40),
+    ]
+    obligations = [dict(data["obligations"][0], monthly_payment=1411.12)]
+    rounded = calculate_payment_load("person-1", incomes, obligations, 8659.64)
+    assert rounded["monthly_income"] == 31920
+    assert rounded["payment_share_percent"] == 31.6
     try:
         record_decision(data["application"], "decision-2", "employee-1", "refused", "")
     except ValueError:
