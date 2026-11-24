@@ -166,7 +166,7 @@ class RequiredDocument <<record>> {
 }
 
 class CompletenessCheck {
-  +check(input: Input, rules: List<CompletenessRule>): Result
+  +check(input: CompletenessCheck.Input, rules: List<CompletenessRule>):\nCompletenessCheck.Result
 }
 
 class PaymentLoadCalculator {
@@ -176,7 +176,7 @@ class PaymentLoadCalculator {
 class ReviewWorkflow {
   -completenessCheck: CompletenessCheck
   -paymentCalculator: PaymentLoadCalculator
-  +review(input: Input): Result
+  +review(input: ReviewWorkflow.Input): ReviewWorkflow.Result
 }
 
 Applicant "1" -- "0..*" Application
